@@ -14,13 +14,14 @@ RUN apk add --no-cache gnupg \
     && wget -q https://releases.hashicorp.com/terraform/0.15.4/terraform_${TERRAFORM_VERSION}_SHA256SUMS.72D7468F.sig \
     && gpg --verify terraform_${TERRAFORM_VERSION}_SHA256SUMS.72D7468F.sig terraform_${TERRAFORM_VERSION}_SHA256SUMS \
     && sha256sum -c terraform_${TERRAFORM_VERSION}_SHA256SUMS 2>&1 | grep "${TERRAFORM_VERSION}_${PLATFORM}.zip:\sOK" \
-    && unzip terraform_${TERRAFORM_VERSION}_${PLATFORM}.zip -d /tmp
+    && unzip terraform_${TERRAFORM_VERSION}_${PLATFORM}.zip -d /tmp \
+    && find /tmp ! -name 'terraform' -type f -exec rm -f {} +
 
 FROM scratch
 
 LABEL MAINTAINER="jamie@chaoscyper.ca"
 LABEL TERRAFORM_VERSION=${TERRAFORM_VERSION}
 
-COPY --from=INTEGRITYCHECK /tmp/terraform /
+COPY --from=INTEGRITYCHECK /tmp/ /tmp
 
-ENTRYPOINT [ "/terraform" ]
+ENTRYPOINT [ "/tmp/terraform" ]
