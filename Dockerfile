@@ -25,7 +25,7 @@ COPY --from=stage1 terraform /terraform
     # a /tmp directory is required by terraform
 COPY --from=stage1 /tmp /tmp
     # the terraform binary requires a ca bundle in order to interact with provider endpoints over http(s)
-COPY --from=stage1 /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs
+COPY --from=stage1 /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
 
 FROM stage2
 
