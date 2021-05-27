@@ -34,8 +34,7 @@ jobs:
             docker build . --file Dockerfile
           fi
 
-  # Push image to GitHub Packages.
-  # See also https://docs.docker.com/docker-hub/builds/
+  # Push image to GitHub Packages and Docker Hub
   push:
     # Ensure test job passes before pushing image.
     needs: test
@@ -56,9 +55,16 @@ jobs:
       - name: Log into registry
         run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login docker.pkg.github.com -u ${{ github.actor }} --password-stdin
 
+      -  name: Login to DockerHub
+         uses: docker/login-action@v1
+         with:
+           username: ${{ secrets.DOCKERHUB_USERNAME }}
+           password: ${{ secrets.DOCKERHUB_TOKEN }}
+
       - name: Push image
         run: |
-          IMAGE_ID=docker.pkg.github.com/${{ github.repository }}/$IMAGE_NAME
+          GIT_IMAGE_ID=docker.pkg.github.com/${{ github.repository }}/$IMAGE_NAME
+          HUB_IMAGE_ID=${{ github.repository }}/$IMAGE_NAME
 
           # Change all uppercase to lowercase
           IMAGE_ID=$(echo $IMAGE_ID | tr '[A-Z]' '[a-z]')
@@ -72,8 +78,13 @@ jobs:
           # Use Docker `latest` tag convention
           [ "$VERSION" == "main" ] && VERSION=latest
 
-          echo IMAGE_ID=$IMAGE_ID
+          echo GIT_IMAGE_ID=$GIT_IMAGE_ID
           echo VERSION=$VERSION
 
-          docker tag $IMAGE_NAME $IMAGE_ID:$VERSION
-          docker push $IMAGE_ID:$VERSION
+          docker tag $IMAGE_NAME $GIT_IMAGE_ID:$VERSION
+          docker push $GIT_IMAGE_ID:$VERSION
+
+          echo HUB_IMAGE_ID=$HUB_IMAGE_ID
+
+          docker tag $IMAGE_NAME $HUB_IMAGE_ID:$VERSION
+          docker push $HUB_IMAGE_ID:$VERSION
