@@ -64,7 +64,7 @@ jobs:
       - name: Push image
         run: |
           GIT_IMAGE_ID=docker.pkg.github.com/${{ github.repository }}/$IMAGE_NAME
-          HUB_IMAGE_ID=${{ github.repository }}/$IMAGE_NAME
+          HUB_IMAGE_ID=${{ github.actor }}/$IMAGE_NAME
 
           # Change all uppercase to lowercase
           GIT_IMAGE_ID=$(echo $GIT_IMAGE_ID | tr '[A-Z]' '[a-z]')
