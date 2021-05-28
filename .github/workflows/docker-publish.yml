@@ -6,7 +6,6 @@ on:
     branches:
       - main
 
-    # Publish `v1.2.3` tags as releases.
     tags:
       - v*
 
@@ -25,7 +24,17 @@ jobs:
     steps:
       - uses: actions/checkout@v2
 
-      - name: Run tests
+      - name: Log in to DockerHub
+        if: ${{ github.event_name == 'pull_request' }}
+        uses: docker/login-action@v1
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Lint Dockerfile
+        run: docker run --rm -i hadolint/hadolint < Dockerfile
+
+      - name: Build Container
         run: |
           if [ -f docker-compose.test.yml ]; then
             docker-compose --file docker-compose.test.yml build
@@ -47,45 +56,41 @@ jobs:
       packages: write
 
     steps:
-      - uses: actions/checkout@v2
+      - name: checkout
+        uses: actions/checkout@v2
 
-      - name: Build image
-        run: docker build . --file Dockerfile --tag $IMAGE_NAME
+      - name: Docker meta
+        id: meta
+        uses: docker/metadata-action@v3
+        with:
+          images:
+            ${{ github.actor }}/$IMAGE_NAME
+            docker.pkg.github.com/${{ github.repository }}/${IMAGE_NAME}
+          tags: |
+            type=ref,event=branch
+            type=ref,event=pr
+            type=semver,pattern={{version}}
+            type=semver,pattern={{major}}.{{minor}}
 
-      - name: Log into registry
-        run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login docker.pkg.github.com -u ${{ github.actor }} --password-stdin
-
-      -  name: Login to DockerHub
+      -  name: Log in to DockerHub
+         if: ${{ github.event_name != 'pull_request' }}
          uses: docker/login-action@v1
          with:
            username: ${{ secrets.DOCKERHUB_USERNAME }}
            password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-      - name: Push image
-        run: |
-          GIT_IMAGE_ID=docker.pkg.github.com/${{ github.repository }}/$IMAGE_NAME
-          HUB_IMAGE_ID=${{ github.actor }}/$IMAGE_NAME
+      -  name: Login to GitHub Docker Registry
+         if: ${{ github.event_name != 'pull_request' }}
+         uses: docker/login-action@v1
+         with:
+           registry: docker.pkg.github.com
+           username: ${{ github.actor }}
+           password: ${{ secrets.GITHUB_TOKEN }}
 
-          # Change all uppercase to lowercase
-          GIT_IMAGE_ID=$(echo $GIT_IMAGE_ID | tr '[A-Z]' '[a-z]')
-          HUB_IMAGE_ID=$(echo $HUB_IMAGE_ID | tr '[A-Z]' '[a-z]')
-
-          # Strip git ref prefix from version
-          VERSION=$(echo "${{ github.ref }}" | sed -e 's,.*/\(.*\),\1,')
-
-          # Strip "v" prefix from tag name
-          [[ "${{ github.ref }}" == "refs/tags/"* ]] && VERSION=$(echo $VERSION | sed -e 's/^v//')
-
-          # Use Docker `latest` tag convention
-          [ "$VERSION" == "main" ] && VERSION=latest
-
-          echo GIT_IMAGE_ID=$GIT_IMAGE_ID
-          echo VERSION=$VERSION
-
-          docker tag $IMAGE_NAME $GIT_IMAGE_ID:$VERSION
-          docker push $GIT_IMAGE_ID:$VERSION
-
-          echo HUB_IMAGE_ID=$HUB_IMAGE_ID
-
-          docker tag $IMAGE_NAME $HUB_IMAGE_ID:$VERSION
-          docker push $HUB_IMAGE_ID:$VERSION
+      - name: Build and push to Docker Hub and Github Docker Registry
+        uses: docker/build-push-action@v2
+        with:
+          context: .
+          push: ${{ github.event_name != 'pull_request' }}
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}

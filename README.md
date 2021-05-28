@@ -3,6 +3,12 @@ This repository aims to create a secure, customizable, minimal docker container 
 
 Only **80.9MB**!!
 
+## using the container
+
+```
+docker run --rm -it -v $PWD:$PWD -w $PWD chaoscypher/minimal-terraform <COMMAND>
+```
+
 ## building the image
 
 This snippet builds the container with default ARGS set in the Dockerfile:
@@ -30,5 +36,7 @@ docker build --build-arg TERRAFORM_VERSION=0.14.1 -t terraform:0.0.1 .
 |Docker Argument         |Default    |
 ------------------------ | -----------
 |ALPINE_VERSION          |3.13.5     |
+|CA_CERT_VERSION         |20191127-r5|
+|GNUPG_VERSION           |2.2.27-r0  |
 |PLATFORM                |linux_amd64|
 |TERRAFORM_VERSION       |0.15.4     |
