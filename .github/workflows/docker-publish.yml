@@ -13,8 +13,6 @@ on:
   pull_request:
     branches:
       - 'main'
-env:
-  IMAGE_NAME: minimal-terraform
 
 jobs:
   # Run tests.
@@ -66,8 +64,8 @@ jobs:
         with:
           # list of Docker images to use as base name for tags
           images: |
-            ${{ github.actor }}/$IMAGE_NAME
-            docker.pkg.github.com/${{ github.actor }}/$IMAGE_NAME
+            ${{ github.actor }}/minimal-terraform
+            docker.pkg.github.com/${{ github.actor }}/minimal-terraform
           # generate Docker tags based on the following events/attributes
           tags: |
             type=schedule
