@@ -24,17 +24,17 @@ jobs:
     steps:
       - uses: actions/checkout@v2
 
-      - name: $IMAGE_NAME - Log in to DockerHub
+      - name: Log in to DockerHub
         if: ${{ github.event_name == 'pull_request' }}
         uses: docker/login-action@v1
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-      - name: $IMAGE_NAME - Lint Dockerfile
+      - name: Lint Dockerfile
         run: docker run --rm -i hadolint/hadolint < Dockerfile
 
-      - name: $IMAGE_NAME - Build Container
+      - name: Build Container
         run: |
           if [ -f docker-compose.test.yml ]; then
             docker-compose --file docker-compose.test.yml build
@@ -56,10 +56,10 @@ jobs:
       packages: write
 
     steps:
-      - name: $IMAGE_NAME - checkout
+      - name: checkout
         uses: actions/checkout@v2
 
-      - name: $IMAGE_NAME - Docker meta
+      - name: Docker meta
         id: meta
         uses: docker/metadata-action@v3
         with:
@@ -72,14 +72,14 @@ jobs:
             type=semver,pattern={{version}}
             type=semver,pattern={{major}}.{{minor}}
 
-      -  name: $IMAGE_NAME - Log in to DockerHub
+      -  name: Log in to DockerHub
          if: ${{ github.event_name != 'pull_request' }}
          uses: docker/login-action@v1
          with:
            username: ${{ secrets.DOCKERHUB_USERNAME }}
            password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-      -  name: $IMAGE_NAME - Login to GitHub Docker Registry
+      -  name: Login to GitHub Docker Registry
          if: ${{ github.event_name != 'pull_request' }}
          uses: docker/login-action@v1
          with:
@@ -87,7 +87,7 @@ jobs:
            username: ${{ github.actor }}
            password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: $IMAGE_NAME - Build and push to Docker Hub and Github Docker Registry
+      - name: Build and push to Docker Hub and Github Docker Registry
         uses: docker/build-push-action@v2
         with:
           context: .
