@@ -63,7 +63,7 @@ jobs:
         id: meta
         uses: docker/metadata-action@v3
         with:
-          images: ${{ github.actor }}/${IMAGE_NAME},docker.pkg.github.com/${{ github.repository }}/${IMAGE_NAME}
+          images: ${{ github.actor }}/${IMAGE_NAME}
           tags: |
             type=ref,event=branch
             type=ref,event=pr
