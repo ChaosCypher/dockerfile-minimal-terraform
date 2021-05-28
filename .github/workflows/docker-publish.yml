@@ -67,13 +67,10 @@ jobs:
             ${{ github.actor }}/minimal-terraform
             ghcr.io/${{ github.actor }}/minimal-terraform
           # generate Docker tags based on the following events/attributes
+          flavor: |
+            latest=auto
           tags: |
-            type=schedule
-            type=ref,event=branch
-            type=ref,event=pr
-            type=semver,pattern={{version}}
-            type=semver,pattern={{major}}.{{minor}}
-            type=semver,pattern={{major}}
+            type=semver,pattern={{version}},value=v0.0.1
             type=sha
 
       -  name: Set up QEMU
