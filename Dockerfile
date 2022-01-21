@@ -1,11 +1,11 @@
-ARG ALPINE_VERSION="3.13.5"
+ARG ALPINE_VERSION="3.15.0"
 
 FROM alpine:${ALPINE_VERSION} AS stage1
 
-ARG CA_CERT_VERSION="20191127-r5"
-ARG GNUPG_VERSION="2.2.27-r0"
+ARG CA_CERT_VERSION="20211220-r0"
+ARG GNUPG_VERSION="2.2.31-r1"
 ARG PLATFORM="linux_amd64"
-ARG TERRAFORM_VERSION="0.15.4"
+ARG TERRAFORM_VERSION="1.1.4"
 
 WORKDIR /
 
@@ -31,7 +31,7 @@ FROM scratch as stage2
 COPY --from=stage1 terraform /terraform
     # a /tmp directory is required by terraform
 COPY --from=stage1 /tmp /tmp
-    # the terraform binary requires a ca bundle in order to interact with provider endpoints over http(s)
+    # the terraform binary requires a ca bundle in order to interact with provider endpoints over tls
 COPY --from=stage1 /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
 
 FROM stage2
