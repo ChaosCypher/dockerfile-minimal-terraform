@@ -14,29 +14,21 @@ docker run --rm -it -v $PWD:$PWD -w $PWD chaoscypher/minimal-terraform <COMMAND>
 This snippet builds the container with default ARGS set in the Dockerfile:
 
 ```
-docker build -t terraform:0.0.1 .
+docker build -t terraform:main .
 ```
 
 The defaults can be overwritten:
 
 ```
-docker build --build-arg TERRAFORM_VERSION=0.14.1 -t terraform:0.0.1 .
+docker build --build-arg TERRAFORM_VERSION=0.14.1 -t terraform:main .
 ```
 
-## bundled package sizes
-
-|Package         |Size   |
----------------- | -------
-|ca-certificates |200.0K |
-|terraform       |62.0MB |
-
-
-### Default Versions
+## Default Versions
 
 |Docker Argument         |Default    |
 ------------------------ | -----------
-|ALPINE_VERSION          |3.15.0     |
-|CA_CERT_VERSION         |20211220-r0|
-|GNUPG_VERSION           |2.2.31-r1  |
+|ALPINE_VERSION          |3.16.2     |
+|CA_CERT_VERSION         |20220614-r0|
+|GNUPG_VERSION           |2.2.35-r4  |
 |PLATFORM                |linux_amd64|
-|TERRAFORM_VERSION       |1.1.4      |
+|TERRAFORM_VERSION       |1.3.4      |
