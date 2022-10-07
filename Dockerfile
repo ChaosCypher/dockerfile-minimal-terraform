@@ -7,6 +7,9 @@ ARG GNUPG_VERSION="2.2.35-r4"
 ARG PLATFORM="linux_amd64"
 ARG TERRAFORM_VERSION="1.3.2"
 
+# specify a user named BUILDER to avoid running as root during stage1
+USER BUILDER
+
 WORKDIR /
 
 COPY hashicorp.asc hashicorp.asc
