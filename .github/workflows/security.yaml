@@ -1,4 +1,4 @@
-name: quality check
+name: security check
 on:
   pull_request:
     branches:
@@ -13,7 +13,7 @@ on:
       - Dockerfile
 
 concurrency:
-  group: ci-${{ github.head_ref || github.run_id }}-2
+  group: security-${{ github.head_ref || github.run_id }}-1
   cancel-in-progress: true
 
 jobs:

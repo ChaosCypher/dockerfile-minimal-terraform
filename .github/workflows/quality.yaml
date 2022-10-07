@@ -11,15 +11,21 @@ on:
       - ready_for_review
 
 concurrency:
-  group: ci-${{ github.head_ref || github.run_id }}-1
+  group: quality-${{ github.head_ref || github.run_id }}-1
   cancel-in-progress: true
 
 jobs:
   quality-checks:
     runs-on: ubuntu-22.04
     steps:
+      - name: checkout code
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
       - name: lint code base
         uses: github/super-linter/slim@v4
         env:
-          VALIDATE_ALL_CODEBASE: true
           DEFAULT_BRANCH: main
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          VALIDATE_ALL_CODEBASE: true
