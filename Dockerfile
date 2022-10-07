@@ -1,5 +1,6 @@
 FROM alpine:3.16.2 AS stage1
 
+ARG PLATFORM="linux_amd64"
 ARG TERRAFORM_VERSION="1.3.2"
 
 WORKDIR /
