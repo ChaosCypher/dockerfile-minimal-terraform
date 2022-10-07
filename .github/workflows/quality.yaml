@@ -1,3 +1,4 @@
+---
 name: quality check
 on:
   pull_request:

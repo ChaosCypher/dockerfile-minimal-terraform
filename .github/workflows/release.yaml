@@ -35,8 +35,10 @@ jobs:
                 owner: context.repo.owner,
                 repo: context.repo.repo
               };
-              console.log("call repos.getLatestRelease:", getLatestReleaseParams);
-              const latestRelease = await github.rest.repos.getLatestRelease(getLatestReleaseParams);
+              console.log("call repos.getLatestRelease:", \
+                getLatestReleaseParams);
+              const latestRelease = await \
+                github.rest.repos.getLatestRelease(getLatestReleaseParams);
               latestReleaseVersion = latestRelease.data.tag_name;
               } catch (e) {
                 if (e.status === 404) {
@@ -51,7 +53,8 @@ jobs:
                 repo: context.repo.repo,
                 commit_sha: '${{ github.sha }}',
               };
-              console.log("call repos.listPullRequestsAssociatedWithCommit:", listPullRequestsAssociatedWithCommitParams);
+              console.log("call repos.listPullRequestsAssociatedWithCommit:",\
+                listPullRequestsAssociatedWithCommitParams);
               const pulls = await github.paginate(
                 github.rest.repos.listPullRequestsAssociatedWithCommit,
                 listPullRequestsAssociatedWithCommitParams

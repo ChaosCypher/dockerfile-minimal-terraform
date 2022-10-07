@@ -1,3 +1,4 @@
+---
 name: publish docker image
 on:
   pull_request:
@@ -41,5 +42,7 @@ jobs:
           tags: |
             ${{ github.actor }}/minimal-terraform:latest
             ghcr.io/${{ github.actor }}/minimal-terraform:main
-            ${{ github.actor }}/minimal-terraform:${{ needs.auto-semver-release.outputs.version }}
-            ghcr.io/${{ github.actor }}/minimal-terraform:${{ needs.auto-semver-release.outputs.version }}
+            ${{ github.actor }}/minimal-terraform:\
+              ${{ needs.auto-semver-release.outputs.version }}
+            ghcr.io/${{ github.actor }}/minimal-terraform:\
+              ${{ needs.auto-semver-release.outputs.version }}
