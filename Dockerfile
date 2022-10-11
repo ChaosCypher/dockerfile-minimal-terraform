@@ -23,7 +23,9 @@ RUN apk add --no-cache ca-certificates==20220614-r0 \
     && grep ${TERRAFORM_VERSION}_${PLATFORM}.zip terraform_${TERRAFORM_VERSION}_SHA256SUMS | sha256sum \
     && unzip terraform_${TERRAFORM_VERSION}_${PLATFORM}.zip \
     && addgroup -g ${SCRATCH_USER_ID} ${SCRATCH_USER} \
-    && adduser --uid ${SCRATCH_USER_ID} -G ${SCRATCH_USER} ${SCRATCH_USER} \
+    && adduser --uid ${SCRATCH_USER_ID} \
+               -G ${SCRATCH_USER} ${SCRATCH_USER} \
+               --disabled-password \
     && find /tmp -type f -type d -exec rm -rf {} +
 
 FROM scratch as stage2
