@@ -46,7 +46,7 @@ LABEL minimal-terraform.maintainer="jamie@chaoscypher.ca"
 LABEL minimal-terraform.platform="linux_amd64"
 LABEL minimal-terraform.terraform-version="${TERRAFORM_VERSION}"
 
-USER scratch
+USER ${SCRATCH_USER}
 
 HEALTHCHECK CMD terraform --version
 

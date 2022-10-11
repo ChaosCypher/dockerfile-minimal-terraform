@@ -24,6 +24,8 @@ jobs:
       - name: build local container
         uses: docker/build-push-action@v2
         with:
+          build-args: |
+            DOCKER_CONTENT_TRUST=1
           tags: localbuild/testimage:${{ github.head_ref }}
           push: false
           load: true

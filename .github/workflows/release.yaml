@@ -112,6 +112,8 @@ jobs:
       - name: build and push
         uses: docker/build-push-action@v3
         with:
+          build-args: |
+            DOCKER_CONTENT_TRUST=1
           context: .
           platforms: linux/amd64
           push: true
