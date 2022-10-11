@@ -116,7 +116,5 @@ jobs:
           tags: |
             ${{ github.actor }}/minimal-terraform:latest
             ghcr.io/chaoscypher/minimal-terraform:latest
-            ${{ github.actor }}/minimal-terraform:\
-              ${{ needs.auto-semver-release.outputs.version }}
-            ghcr.io/chaoscypher/minimal-terraform:\
-              ${{ needs.auto-semver-release.outputs.version }}
+            ${{ github.actor }}/minimal-terraform:${{ needs.auto-semver-release.outputs.version }}
+            ghcr.io/chaoscypher/minimal-terraform:${{ needs.auto-semver-release.outputs.version }}
