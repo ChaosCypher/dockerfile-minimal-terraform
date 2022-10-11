@@ -50,7 +50,7 @@ LABEL minimal-terraform.maintainer="jamie@chaoscypher.ca"
 LABEL minimal-terraform.platform="linux_amd64"
 LABEL minimal-terraform.terraform-version="${TERRAFORM_VERSION}"
 
-# dont use the SCRATCH_USER dockerfile arg as the azure/container-scan action doesn't handle this
+# azure/container-scan action doesn't handle dockerfile args
 USER scratch
 
 HEALTHCHECK CMD terraform --version

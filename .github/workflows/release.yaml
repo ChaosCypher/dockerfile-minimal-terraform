@@ -90,8 +90,6 @@ jobs:
 
   publish-image:
     runs-on: ubuntu-22.04
-    env: 
-      DOCKER_CONTENT_TRUST: 1
     needs: auto-semver-release
     steps:
       -  name: set up QEMU
