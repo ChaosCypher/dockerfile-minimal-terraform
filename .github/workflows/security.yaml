@@ -28,9 +28,7 @@ jobs:
           push: false
           load: true
 
-      - name: cve scan container
-        uses: anchore/scan-action@v3
+      - uses: azure/container-scan@v0
         with:
-          image: localbuild/testimage:${{ github.head_ref }}
-          fail-build: true
-          severity-cutoff: high
+          image-name: localbuild/testimage:${{ github.head_ref }}
+          severity-threshold: high
