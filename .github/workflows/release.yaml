@@ -94,6 +94,8 @@ jobs:
 
   publish-image:
     runs-on: ubuntu-22.04
+    env: 
+      DOCKER_CONTENT_TRUST: 1
     needs: auto-semver-release
     steps:
       - name: log in to dockerhub
@@ -112,8 +114,6 @@ jobs:
       - name: build and push
         uses: docker/build-push-action@v3
         with:
-          build-args: |
-            DOCKER_CONTENT_TRUST=1
           context: .
           platforms: linux/amd64
           push: true
