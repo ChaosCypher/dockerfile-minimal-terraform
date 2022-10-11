@@ -5,7 +5,7 @@ Only **62.2MB**!!
 
 ## using the container
 
-```
+```shell
 docker run --rm -it -v $PWD:$PWD -w $PWD chaoscypher/minimal-terraform <COMMAND>
 ```
 
@@ -13,13 +13,13 @@ docker run --rm -it -v $PWD:$PWD -w $PWD chaoscypher/minimal-terraform <COMMAND>
 
 This snippet builds the container with default ARGS set in the Dockerfile:
 
-```
+```shell
 docker build -t terraform:main .
 ```
 
 The defaults can be overwritten:
 
-```
+```shell
 docker build --build-arg TERRAFORM_VERSION=0.14.1 -t terraform:main .
 ```
 

@@ -1,0 +1,126 @@
+---
+name: tag github release
+on:
+  pull_request:
+    branches:
+      - main
+    types:
+      - closed
+    paths:
+      - Dockerfile
+      - hashicorp.asc
+
+permissions:
+  contents: write
+  issues: read
+  pull-requests: read
+
+jobs:
+  auto-semver-release:
+    if: github.event.pull_request.merged
+    runs-on: ubuntu-22.04
+    outputs:
+      version: ${{ steps.increment-version.outputs.result }}
+    steps:
+      - name: increment version
+        id: increment-version
+        uses: actions/github-script@v6.2.0
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          result-encoding: string
+          script: |
+            let latestReleaseVersion = '';
+
+            try {
+              const getLatestReleaseParams = {
+                owner: context.repo.owner,
+                repo: context.repo.repo
+              };
+              console.log("call repos.getLatestRelease:", \
+                getLatestReleaseParams);
+              const latestRelease = await \
+                github.rest.repos.getLatestRelease(getLatestReleaseParams);
+              latestReleaseVersion = latestRelease.data.tag_name;
+              } catch (e) {
+                if (e.status === 404) {
+                  latestReleaseVersion = 'v0.0.0';
+                } else {
+                  throw e;
+                }
+              }
+
+              const listPullRequestsAssociatedWithCommitParams = {
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                commit_sha: '${{ github.sha }}',
+              };
+              console.log("call repos.listPullRequestsAssociatedWithCommit:",\
+                listPullRequestsAssociatedWithCommitParams);
+              const pulls = await github.paginate(
+                github.rest.repos.listPullRequestsAssociatedWithCommit,
+                listPullRequestsAssociatedWithCommitParams
+              );
+              const labels = pulls.flatMap(p => p.labels.map(l => l.name));
+              const tagNames = latestReleaseVersion.split('.');
+              let version = [];
+
+              if (labels.includes('major release')) {
+                version = [`v${Number(tagNames[0].replace(\
+                  'v', '')) + 1}`, 0, 0];
+              } else if (labels.includes('minor release')) {
+                version = [tagNames[0], Number(tagNames[1]) + 1, 0];
+              } else {
+                version = [tagNames[0], tagNames[1], Number(tagNames[2]) + 1];
+              }
+
+              return version.join('.');
+
+      - name: create release
+        uses: actions/github-script@v6.2.0
+        env:
+          GITHUB_REF: ${{env.GITHUB_REF}}
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const createReleaseParams = {
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              tag_name: '${{ steps.increment-version.outputs.result }}',
+              target_commitish: process.env['GITHUB_REF'],
+              generate_release_notes: true
+            };
+            console.log("call repos.createRelease:", createReleaseParams);
+            await github.rest.repos.createRelease(createReleaseParams);
+
+  publish-image:
+    runs-on: ubuntu-22.04
+    env: 
+      DOCKER_CONTENT_TRUST: 1
+    needs: auto-semver-release
+    steps:
+      - name: log in to dockerhub
+        uses: docker/login-action@v2
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: log in to github container registry
+        uses: docker/login-action@v2
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: build and push
+        uses: docker/build-push-action@v3
+        with:
+          context: .
+          platforms: linux/amd64
+          push: true
+          tags: |
+            ${{ github.actor }}/minimal-terraform:latest
+            ghcr.io/${{ github.actor }}/minimal-terraform:main
+            ${{ github.actor }}/minimal-terraform:\
+              ${{ needs.auto-semver-release.outputs.version }}
+            ghcr.io/${{ github.actor }}/minimal-terraform:\
+              ${{ needs.auto-semver-release.outputs.version }}

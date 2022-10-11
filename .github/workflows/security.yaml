@@ -1,0 +1,36 @@
+---
+name: security check
+on:
+  pull_request:
+    branches:
+      - "main"
+    types:
+      - edited
+      - opened
+      - reopened
+      - synchronize
+      - ready_for_review
+    paths:
+      - Dockerfile
+
+concurrency:
+  group: security-${{ github.head_ref || github.run_id }}-1
+  cancel-in-progress: true
+
+jobs:
+  security-checks:
+    runs-on: ubuntu-22.04
+    env: 
+      DOCKER_CONTENT_TRUST: 1
+    steps:
+      - name: build local container
+        uses: docker/build-push-action@v2
+        with:
+          tags: localbuild/testimage:${{ github.head_ref }}
+          push: false
+          load: true
+
+      - uses: azure/container-scan@v0
+        with:
+          image-name: localbuild/testimage:${{ github.head_ref }}
+          severity-threshold: high
