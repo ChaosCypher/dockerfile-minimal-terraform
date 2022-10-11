@@ -7,7 +7,6 @@ ARG TERRAFORM_VERSION="1.3.2"
 
 WORKDIR /
 
-# copy the hashicorp gpg key into the container
 COPY hashicorp.asc hashicorp.asc
 
 # fail the Dockerfile build if any commands fail
