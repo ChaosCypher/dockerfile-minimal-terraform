@@ -16,7 +16,7 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  quality-checks:
+  lint:
     runs-on: ubuntu-22.04
     steps:
       - name: checkout code

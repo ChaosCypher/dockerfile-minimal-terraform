@@ -18,7 +18,7 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  security-checks:
+  cve-scan:
     runs-on: ubuntu-22.04
     steps:
       - name: build local container
