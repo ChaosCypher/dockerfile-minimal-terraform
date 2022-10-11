@@ -114,7 +114,7 @@ jobs:
           platforms: linux/amd64
           push: true
           tags: |
-            ${{ github.actor }}/minimal-terraform:latest
+            chaoscypher/minimal-terraform:latest
             ghcr.io/chaoscypher/minimal-terraform:latest
-            ${{ github.actor }}/minimal-terraform:${{ needs.auto-semver-release.outputs.version }}
+            chaoscypher/minimal-terraform:${{ needs.auto-semver-release.outputs.version }}
             ghcr.io/chaoscypher/minimal-terraform:${{ needs.auto-semver-release.outputs.version }}
