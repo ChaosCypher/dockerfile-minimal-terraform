@@ -27,7 +27,7 @@ RUN apk add --no-cache ca-certificates==20220614-r0 \
     && adduser --uid ${SCRATCH_USER_ID} \
                -G ${SCRATCH_USER} ${SCRATCH_USER} \
                --disabled-password \
-        # remove anything in the /tmp directory to reduce the image size
+        # remove anything in the /tmp directory before copying to stage 2
     && find /tmp -type f -type d -exec rm -rf {} +
 
 FROM scratch as stage2
