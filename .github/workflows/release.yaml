@@ -81,7 +81,7 @@ jobs:
             const createReleaseParams = {
               owner: context.repo.owner,
               repo: context.repo.repo,
-              tag_name: '${{ steps.increment_version.outputs.result }}',
+              tag_name: '${{ steps.increment-version.outputs.result }}',
               target_commitish: process.env['GITHUB_REF'],
               generate_release_notes: true
             };
