@@ -22,6 +22,7 @@ RUN apk add --no-cache ca-certificates==20220614-r0 \
         # sha256sum packaged with alpine doesnt allow file exclusions so we need to isolate the file we want to verify
     && grep ${TERRAFORM_VERSION}_${PLATFORM}.zip terraform_${TERRAFORM_VERSION}_SHA256SUMS | sha256sum \
     && unzip terraform_${TERRAFORM_VERSION}_${PLATFORM}.zip \
+        # create a scratch user that will have an entry in the /etc/passwd file
     && addgroup -g ${SCRATCH_USER_ID} ${SCRATCH_USER} \
     && adduser --uid ${SCRATCH_USER_ID} \
                -G ${SCRATCH_USER} ${SCRATCH_USER} \
