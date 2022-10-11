@@ -1,6 +1,8 @@
 FROM alpine:3.16.2 AS stage1
 
 ARG PLATFORM="linux_amd64"
+ARG NOBODY_USER="nobody"
+ARG NOBODY_USER_ID="1001"
 ARG TERRAFORM_VERSION="1.3.2"
 
 WORKDIR /
@@ -20,6 +22,8 @@ RUN apk add --no-cache ca-certificates==20220614-r0 \
         # sha256sum packaged with alpine doesnt allow file exclusions so we need to isolate the file we want to verify
     && grep ${TERRAFORM_VERSION}_${PLATFORM}.zip terraform_${TERRAFORM_VERSION}_SHA256SUMS | sha256sum \
     && unzip terraform_${TERRAFORM_VERSION}_${PLATFORM}.zip \
+    && addgroup -g ${NOBODY_USER_ID} ${NOBODY_USER} \
+    && adduser --uid ${NOBODY_USER_ID} -G ${NOBODY_USER} ${NOBODY_USER} \
     && find /tmp -type f -type d -exec rm -rf {} +
 
 FROM scratch as stage2
@@ -29,6 +33,8 @@ COPY --from=stage1 terraform /terraform
 COPY --from=stage1 /tmp /tmp
     # the terraform binary requires a ca bundle in order to interact with provider endpoints over tls
 COPY --from=stage1 /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
+    # copy the scratch user created in stage 1 to avoid running as root in the final image
+COPY --from=stage1 /etc/passwd /etc/passwd
 
 FROM stage2
 
@@ -37,5 +43,9 @@ LABEL minimal-terraform.apk-gnupg-version="2.2.35-r4"
 LABEL minimal-terraform.maintainer="jamie@chaoscypher.ca"
 LABEL minimal-terraform.platform="linux_amd64"
 LABEL minimal-terraform.terraform-version="${TERRAFORM_VERSION}"
+
+USER ${NOBODY_USER}
+
+HEALTHCHECK CMD terraform --version
 
 ENTRYPOINT [ "/terraform" ]
