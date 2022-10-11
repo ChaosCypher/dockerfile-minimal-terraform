@@ -20,7 +20,7 @@ jobs:
     if: github.event.pull_request.merged
     runs-on: ubuntu-22.04
     outputs:
-      version: ${{ steps.increment_version.outputs.result }}
+      version: ${{ steps.incremented-version.outputs.recorded-version }}
     steps:
       - name: increment version
         id: increment_version
@@ -74,6 +74,10 @@ jobs:
               }
 
               return version.join('.');
+
+      - id: incremented-version
+        run: echo "::set-output name=recorded-version::${{ steps.increment_version.outputs.result }}"
+        shell: bash
 
       - name: create release
         uses: actions/github-script@v6.2.0
