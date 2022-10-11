@@ -1,5 +1,7 @@
 FROM alpine:3.16.2 AS stage1
 
+ARG CA_CERT_VERSION="20220614-r0"
+ARG GNUPG_VERSION="2.2.35-r4"
 ARG PLATFORM="linux_amd64"
 ARG SCRATCH_USER="scratch"
 ARG SCRATCH_USER_ID="1001"
@@ -12,8 +14,8 @@ COPY hashicorp.asc hashicorp.asc
 # fail the Dockerfile build if any commands fail
 SHELL ["/bin/ash", "-eo", "pipefail", "-c"]
 
-RUN apk add --no-cache ca-certificates==20220614-r0 \
-                       gnupg==2.2.35-r4 \
+RUN apk add --no-cache ca-certificates==${CA_CERT_VERSION} \
+                       gnupg==${GNUPG_VERSION} \
         # expect a warning here because the trustdb is empty in this container - we manually verify the signature later
     && gpg --import hashicorp.asc \
     && wget -q https://releases.hashicorp.com/terraform/${TERRAFORM_VERSION}/terraform_${TERRAFORM_VERSION}_${PLATFORM}.zip \
@@ -42,10 +44,10 @@ COPY --from=stage1 /etc/passwd /etc/passwd
 
 FROM stage2
 
-LABEL minimal-terraform.apk-ca-cert-version="20220614-r0"
-LABEL minimal-terraform.apk-gnupg-version="2.2.35-r4"
+LABEL minimal-terraform.apk-ca-cert-version="${CA_CERT_VERSION}"
+LABEL minimal-terraform.apk-gnupg-version="${GNUPG_VERSION}"
 LABEL minimal-terraform.maintainer="jamie@chaoscypher.ca"
-LABEL minimal-terraform.platform="linux_amd64"
+LABEL minimal-terraform.platform="${PLATFORM}"
 LABEL minimal-terraform.terraform-version="${TERRAFORM_VERSION}"
 
 USER ${SCRATCH_USER}
