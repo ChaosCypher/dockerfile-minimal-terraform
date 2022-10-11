@@ -22,7 +22,6 @@ RUN apk add --no-cache ca-certificates==20220614-r0 \
         # sha256sum packaged with alpine doesnt allow file exclusions so we need to isolate the file we want to verify
     && grep ${TERRAFORM_VERSION}_${PLATFORM}.zip terraform_${TERRAFORM_VERSION}_SHA256SUMS | sha256sum \
     && unzip terraform_${TERRAFORM_VERSION}_${PLATFORM}.zip \
-    && addgroup -g ${NOBODY_USER_ID} ${NOBODY_USER} \
     && adduser --uid ${NOBODY_USER_ID} -G ${NOBODY_USER} ${NOBODY_USER} \
     && find /tmp -type f -type d -exec rm -rf {} +
 
