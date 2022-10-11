@@ -122,4 +122,3 @@ jobs:
           push: true
           tags: |
             chaoscypher/minimal-terraform:${{ needs.auto-semver-release.outputs.version }}
-            ghcr.io/chaoscypher/minimal-terraform:${{ needs.auto-semver-release.outputs.version }}
