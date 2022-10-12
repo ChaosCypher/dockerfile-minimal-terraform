@@ -43,6 +43,7 @@ LABEL minimal-terraform.apk-ca-cert-version="${CA_CERT_VERSION}"
 LABEL minimal-terraform.apk-gnupg-version="${GNUPG_VERSION}"
 LABEL org.opencontainers.image.authors="jamie@chaoscypher.ca"
 LABEL org.opencontainers.image.source="https://github.com/ChaosCypher/dockerfile-minimal-terraform/blob/main/Dockerfile"
+LABEL org.opencontainers.image.vendor="ChaosCypher"
 LABEL minimal-terraform.terraform-version="${TERRAFORM_VERSION}"
 
 USER nobody
