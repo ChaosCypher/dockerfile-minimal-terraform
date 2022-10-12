@@ -27,11 +27,11 @@ jobs:
       - name: build local container
         uses: docker/build-push-action@v3
         with:
-          tags: "localbuild/testimage:${{ github.head_ref }}"
+          tags: localbuild/testimage:test
           push: false
           load: true
 
       - name: test entrypoint
-        uses: "docker://localbuild/testimage:${{ github.head_ref }}"
+        uses: docker://localbuild/testimage:test
         with:
           args: --version
