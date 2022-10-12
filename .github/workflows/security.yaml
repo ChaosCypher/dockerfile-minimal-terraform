@@ -55,7 +55,7 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  build:
+  cve-scan:
     runs-on: ubuntu-22.04
     steps:
       - run: 'echo "cve-scan job not required."'
