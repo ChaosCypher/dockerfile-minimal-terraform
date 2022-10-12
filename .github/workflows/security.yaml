@@ -33,30 +33,3 @@ jobs:
           image-name: localbuild/testimage:${{ github.head_ref }}
           run-quality-checks: false
           severity-threshold: critical
-...
-
----
-name: security check
-on:
-  pull_request:
-    branches:
-      - "main"
-    types:
-      - edited
-      - opened
-      - reopened
-      - synchronize
-      - ready_for_review
-    paths-ignore:
-      - Dockerfile
-
-concurrency:
-  group: security-${{ github.head_ref || github.run_id }}-1
-  cancel-in-progress: true
-
-jobs:
-  cve-scan:
-    runs-on: ubuntu-22.04
-    steps:
-      - run: 'echo "cve-scan job not required."'
-...
