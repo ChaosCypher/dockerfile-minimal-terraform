@@ -31,6 +31,7 @@ jobs:
         id: terraform-upstream-version
         uses: actions/github-script@v6.3.2
         with:
+          results-encoding: string
           script: |
             const terraform_url = https://checkpoint-api.hashicorp.com/v1/check/terraform
             const result = await github.request(terraform_url)
