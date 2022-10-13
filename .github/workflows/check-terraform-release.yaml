@@ -25,8 +25,6 @@ jobs:
       - name: get local terraform version
         id: terraform-local-verison
         run: docker run ${{ env.TEST_TAG }} -version -json
-        with:
-          results-encoding: string
 
       - name: get latest upstream terraform version
         id: terraform-upstream-version
@@ -36,11 +34,8 @@ jobs:
           script: |
             const terraform_url = https://checkpoint-api.hashicorp.com/v1/check/terraform
             const result = await github.request(terraform_url)
-            const local_terraform_version = "${{ fromJson(steps.terraform-local-version.outputs.result).terraform_version }}"
+            const local_terraform_version = "${{ steps.terraform-local-version.outputs.result }}"
             const upstream_terraform_version = result.data.current_version
-            
-            if (upstream_terraform_version > local_terraform_version) {
-              console.log("Newer version of terraform found.")
-            } else {
-              console.log("Local version of terraform is latest.")
-            }
+
+            console.log(local_terraform_version)
+            console.log(upstream_terraform_version)
