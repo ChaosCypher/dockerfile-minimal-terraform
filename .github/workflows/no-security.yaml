@@ -12,7 +12,6 @@ on:
       - ready_for_review
     paths-ignore:
       - Dockerfile
-      - '.github/**'
 
 concurrency:
   group: no-security-${{ github.head_ref || github.run_id }}-1
