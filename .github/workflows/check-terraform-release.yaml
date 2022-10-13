@@ -25,7 +25,6 @@ jobs:
       - name: get local terraform version
         id: terraform-local-verison
         run: docker run ${{ env.TEST_TAG }} -version -json
-        shell: sh
         with:
           results-encoding: string
 
