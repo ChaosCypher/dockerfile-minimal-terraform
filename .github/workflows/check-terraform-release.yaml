@@ -4,6 +4,9 @@ on:
     - cron: 0 0 * * *
   workflow_dispatch:
 
+env:
+  TEST_TAG: chaoscypher/minimal-terraform:test
+
 jobs:
   check-new-release:
     runs-on: ubuntu-22.04
@@ -15,13 +18,13 @@ jobs:
       - name: build local container
         uses: docker/build-push-action@v3
         with:
-          tags: localbuild/testimage:${{ github.head_ref }}
+          tags: ${{ env.TEST_TAG }}
           push: false
           load: true
 
       - name: get local terraform version
         id: terraform-local-verison
-        run: docker run localbuild/testimage:${{ github.head_ref }} -version -json
+        run: docker run ${{ env.TEST_TAG }} -version -json
         shell: sh
 
       - name: get latest upstream terraform version
@@ -31,33 +34,11 @@ jobs:
           script: |
             const terraform_url = https://checkpoint-api.hashicorp.com/v1/check/terraform
             const result = await github.request(terraform_url)
+            const local_terraform_version = "${{ fromJson(steps.terraform-local-version.outputs.result).terraform_version }}"
+            const upstream_terraform_version = result.data.current_version
             
-            return result.data
-
-      - name: check newer terraform release
-        id: newer-release
-        if: fromJson(steps.terraform-upstream-version.outputs.result).current_version > fromJson(steps.terraform-local-version.outputs.result).terraform_version
-        run: sed -i "s/"${{ fromJson(steps.terraform-local-version.outputs.result).terraform_version }}"/"${{ fromJson(steps.terraform-upstream-version.outputs.result).current_version }}"/g" Dockerfile
-
-      - name: create pull request
-        if: steps.newer-release.outcome == 'success'
-        uses: actions/github-script@v6
-        with:
-          script: |
-            const { repo, owner } = context.repo;
-            const result = await github.rest.pulls.create({
-              title: '[Automation] - Terraform ${{ fromJson(steps.terraform-upstream-version.outputs.result).current_version }} is available.',
-              owner,
-              repo,
-              head: 'gh-automation-tf-release',
-              base: 'main',
-              body: [
-                '- update Terraform in Dockerfile to ${{ fromJson(steps.terraform-upstream-version.outputs.result).current_version }}'
-              ].join('\n')
-            });
-            github.rest.issues.addLabels({
-              owner,
-              repo,
-              issue_number: result.data.number,
-              labels: ['patch release']
-            });
+            if (upstream_terraform_version > local_terraform_version) {
+              console.log("Newer version of terraform found.")
+            } else {
+              console.log("Local version of terraform is latest.")
+            }
