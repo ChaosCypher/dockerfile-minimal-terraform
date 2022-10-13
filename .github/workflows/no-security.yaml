@@ -10,12 +10,8 @@ on:
       - reopened
       - synchronize
       - ready_for_review
-    paths:
-      - '.github/**'
-      - 'hashicorp.asc'
-      - 'LICENSE'
-      - 'README.md'
-      - '!Dockerfile'
+    paths-ignore:
+      - Dockerfile
 
 concurrency:
   group: no-security-${{ github.head_ref || github.run_id }}-1
