@@ -1,4 +1,4 @@
-FROM alpine:3.16.2 AS stage1
+FROM alpine:3.16.3 AS stage1
 
 ARG CA_CERT_VERSION="20220614-r0"
 ARG GNUPG_VERSION="2.2.35-r4"
