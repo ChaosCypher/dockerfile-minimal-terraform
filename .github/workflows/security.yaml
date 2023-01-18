@@ -24,12 +24,12 @@ jobs:
       - name: build local container
         uses: docker/build-push-action@v3
         with:
-          tags: localbuild/testimage:${{ github.head_ref }}
+          tags: localbuild/testimage:${{ github.run_id }}-1
           push: false
           load: true
 
       - uses: azure/container-scan@v0
         with:
-          image-name: localbuild/testimage:${{ github.head_ref }}
+          image-name: localbuild/testimage:${{ github.run_id }}-1
           run-quality-checks: false
           severity-threshold: critical
