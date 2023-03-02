@@ -22,7 +22,7 @@ jobs:
     runs-on: ubuntu-22.04
     steps:
       - name: build local container
-        uses: docker/build-push-action@v3
+        uses: docker/build-push-action@v4
         with:
           tags: localbuild/testimage:${{ github.run_id }}-1
           push: false
