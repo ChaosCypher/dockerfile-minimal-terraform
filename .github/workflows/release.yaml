@@ -115,3 +115,8 @@ jobs:
           tags: |
             chaoscypher/minimal-terraform:${{ needs.auto-semver-release.outputs.version }}
             chaoscypher/minimal-terraform:${{ needs.auto-semver-release.outputs.major-version }}
+      
+      - name: publish sbom
+        uses: anchore/sbom-action@v0
+        with:
+          image: chaoscypher/minimal-terraform:${{ needs.auto-semver-release.outputs.version }}
