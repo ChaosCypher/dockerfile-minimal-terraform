@@ -30,4 +30,5 @@ jobs:
       - uses: anchore/scan-action@v3
         with:
           image: localbuild/testimage:${{ github.run_id }}-1
+          add-cpes-if-none: true
           fail-build: true
