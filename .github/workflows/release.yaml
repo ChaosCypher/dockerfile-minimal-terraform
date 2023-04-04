@@ -21,6 +21,7 @@ jobs:
     runs-on: ubuntu-22.04
     outputs:
       version: ${{ steps.increment-version.outputs.result }}
+      major-version: ${{ steps.increment-version.outputs.major-version }}
     steps:
       - name: increment version
         id: increment-version
@@ -68,7 +69,11 @@ jobs:
             } else {
               version = [tagNames[0], tagNames[1], Number(tagNames[2]) + 1];
             }
-
+            
+            const semVer = version.split('.');
+            
+            core.setOutput('major-version', semVer[0])
+            
             return version.join('.');
 
       - name: create release
@@ -109,3 +114,4 @@ jobs:
           push: true
           tags: |
             chaoscypher/minimal-terraform:${{ needs.auto-semver-release.outputs.version }}
+            chaoscypher/minimal-terraform:${{ needs.auto-semver-release.outputs.major-version }}
