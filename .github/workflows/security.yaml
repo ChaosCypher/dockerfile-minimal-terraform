@@ -27,9 +27,7 @@ jobs:
           tags: localbuild/testimage:${{ github.run_id }}-1
           push: false
           load: true
-
-      - uses: azure/container-scan@v0
+      - uses: anchore/scan-action@v3
         with:
-          image-name: localbuild/testimage:${{ github.run_id }}-1
-          run-quality-checks: false
-          severity-threshold: critical
+          image: localbuild/testimage:${{ github.run_id }}-1
+          fail-build: true
