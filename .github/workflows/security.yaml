@@ -27,8 +27,11 @@ jobs:
           tags: localbuild/testimage:${{ github.run_id }}-1
           push: false
           load: true
-      - uses: anchore/scan-action@v3
+      - uses: aquasecurity/trivy-action@v0
         with:
-          image: localbuild/testimage:${{ github.run_id }}-1
-          add-cpes-if-none: true
-          fail-build: true
+          image-ref: localbuild/testimage:${{ github.run_id }}-1
+          format: 'table'
+          exit-code: '1'
+          ignore-unfixed: false
+          vuln-type: 'os,library'
+          severity: 'CRITICAL,HIGH'
