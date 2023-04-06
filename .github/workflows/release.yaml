@@ -24,7 +24,7 @@ jobs:
     steps:
       - name: increment version
         id: increment-version
-        uses: actions/github-script@v6.4.0
+        uses: actions/github-script@v6.4.1
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           result-encoding: string
@@ -72,7 +72,7 @@ jobs:
             return version.join('.');
 
       - name: create release
-        uses: actions/github-script@v6.4.0
+        uses: actions/github-script@v6.4.1
         env:
           GITHUB_REF: ${{env.GITHUB_REF}}
         with:
