@@ -27,7 +27,8 @@ jobs:
           tags: localbuild/testimage:${{ github.run_id }}-1
           push: false
           load: true
-      - uses: aquasecurity/trivy-action@master
+      - name: cve scan
+        uses: aquasecurity/trivy-action@master
         with:
           image-ref: localbuild/testimage:${{ github.run_id }}-1
           format: 'table'
