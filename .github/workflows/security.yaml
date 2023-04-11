@@ -18,15 +18,20 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  cve-scan:
+  build-container:
     runs-on: ubuntu-22.04
     steps:
-      - name: build local container
+      - name: build container
         uses: docker/build-push-action@v4
         with:
           tags: localbuild/testimage:${{ github.run_id }}-1
           push: false
           load: true
+
+  cve-scan:
+    runs-on: ubuntu-22.04
+    needs: build-container
+    steps:
       - name: cve scan
         uses: aquasecurity/trivy-action@master
         with:
@@ -36,3 +41,15 @@ jobs:
           ignore-unfixed: false
           vuln-type: 'os,library'
           severity: 'CRITICAL,HIGH'
+
+  publish-sbom:
+    runs-on: ubuntu-22.04
+    needs: [build-container, cve-scan]
+    steps:
+      - name: publish sbom
+        uses: anchore/sbom-action@v0
+        with:
+          artifact-name: sbom.spdx
+          image: localbuild/testimage:${{ github.run_id }}-1
+          output-file: sbom.json
+          format: spdx-json
