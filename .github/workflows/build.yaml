@@ -24,6 +24,8 @@ jobs:
     steps:
       - name: set up docker buildx
         uses: docker/setup-buildx-action@v2
+        with:
+          install: true
 
       - name: build container
         uses: docker/build-push-action@v4
@@ -33,7 +35,7 @@ jobs:
           tags: localbuild/testimage:v1
           load: true
           push: false
-          outputs: dest=/tmp/images.tar
+          outputs: type=docker,dest=/tmp/images.tar
           
       - name: store artifact
         uses: actions/upload-artifact@v3
