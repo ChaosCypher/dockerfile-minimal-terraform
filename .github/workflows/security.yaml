@@ -25,7 +25,7 @@ jobs:
       - name: fetch image artifact
         uses: actions/download-artifact@v3
         with:
-          name: localbuild/testimage
+          name: container-artifact
           path: /tmp/images.tar
           
       - name: load images
