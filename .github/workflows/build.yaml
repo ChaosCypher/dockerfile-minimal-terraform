@@ -37,5 +37,5 @@ jobs:
       - name: store artifact
         uses: actions/upload-artifact@v3
         with:
-          name: localbuild/testimage:v1
+          name: localbuild/testimage
           path: /tmp/images.tar
