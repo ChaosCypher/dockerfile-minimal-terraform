@@ -30,12 +30,12 @@ jobs:
         with:
           provenance: true
           sbom: true
-          tags: localbuild/testimage:${{ github.run_id }}-1
+          tags: localbuild/testimage:v1
           push: false
           outputs: type=tar,dest=/tmp/images.tar
           
       - name: store artifact
         uses: actions/upload-artifact@v3
         with:
-          name: build-artifacts-${{ github.run_id }}-1
+          name: localbuild/testimage:v1
           path: /tmp/images.tar
