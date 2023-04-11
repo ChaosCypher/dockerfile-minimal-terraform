@@ -33,7 +33,7 @@ jobs:
           tags: localbuild/testimage:${{ github.run_id }}-1
           push: false
           load: true
-          outputs: type=docker,dest=/tmp/images.tar
+          outputs: type=docker-container,dest=/tmp/images.tar
           
       - name: store artifact
         uses: actions/upload-artifact@v3
