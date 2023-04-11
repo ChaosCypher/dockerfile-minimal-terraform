@@ -41,7 +41,9 @@ jobs:
         run: unzip container-artifact.zip
           
       - name: load images
-        run: docker import ./images.tar localbuild/testimage:v1
+        run: |
+          docker import ./images.tar localbuild/testimage:v1
+          docker images ls
           
   cve-scan:
     runs-on: ubuntu-22.04
