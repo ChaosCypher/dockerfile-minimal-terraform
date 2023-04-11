@@ -19,28 +19,21 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  build-container:
+  load-container:
     runs-on: ubuntu-22.04
     steps:
-      - name: build container
-        uses: docker/build-push-action@v4
-        with:
-          provenance: true
-          sbom: true
-          tags: localbuild/testimage:${{ github.run_id }}-1
-          push: false
-          load: true
-          outputs: type=docker,dest=/tmp/images.tar
-          
-      - name: store artifact
-        uses: actions/upload-artifact@v3
+      - name: fetch image artifact
+        uses: actions/download-artifact@v3
         with:
           name: build-artifacts-${{ github.run_id }}-1
           path: /tmp/images.tar
-
+          
+      - name: load images
+        run: docker load --input /tmp/images.tar
+          
   cve-scan:
     runs-on: ubuntu-22.04
-    needs: build-container
+    needs: load-container
     steps:
       - name: cve scan
         uses: aquasecurity/trivy-action@master
