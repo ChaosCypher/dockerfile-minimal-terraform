@@ -32,7 +32,7 @@ jobs:
           sbom: true
           tags: localbuild/testimage:v1
           push: false
-          outputs: dest=/tmp/images.tar
+          outputs: type=oci,dest=/tmp/images.tar
           
       - name: store artifact
         uses: actions/upload-artifact@v3
