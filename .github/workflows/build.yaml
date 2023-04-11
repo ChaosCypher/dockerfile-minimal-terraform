@@ -30,17 +30,16 @@ jobs:
         with:
           install: true
 
-      - name: build container
+      - name: build image
         uses: docker/build-push-action@v4
         with:
           tags: localbuild/testimage:v1
           push: false
           provenance: true
           sbom: true
-          outputs: dest=/tmp/images.tar
           
-      - name: check dir
-        run: ls /tmp
+      - name: tar image
+        run: docker save -o /tmp/images.tar localbuild/testimage:v1
 
       - name: store artifact
         uses: actions/upload-artifact@v3
