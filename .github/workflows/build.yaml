@@ -32,7 +32,7 @@ jobs:
           sbom: true
           tags: localbuild/testimage:${{ github.run_id }}-1
           push: false
-          outputs: type=docker-container,dest=/tmp/images.tar
+          outputs: type=docker,dest=/tmp/images.tar
           
       - name: store artifact
         uses: actions/upload-artifact@v3
