@@ -2,7 +2,10 @@
 name: security check
 on:
   workflow_run:
-    workflows: ["build"]
+    workflows:
+      - build
+    types:
+      - completed
 
 concurrency:
   group: security-${{ github.head_ref || github.run_id }}-1
