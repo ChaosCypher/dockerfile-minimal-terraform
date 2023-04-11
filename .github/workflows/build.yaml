@@ -34,9 +34,8 @@ jobs:
           provenance: true
           sbom: true
           tags: localbuild/testimage:v1
-          load: true
           push: false
-          outputs: dest=/tmp/images.tar
+          outputs: type=docker,dest=/tmp/images.tar
           
       - name: store artifact
         uses: actions/upload-artifact@v3
