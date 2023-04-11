@@ -24,9 +24,18 @@ jobs:
       - name: build container
         uses: docker/build-push-action@v4
         with:
+          provenance: true
+          sbom: true
           tags: localbuild/testimage:${{ github.run_id }}-1
           push: false
           load: true
+          outputs: type=docker,dest=/tmp/images.tar
+          
+      - name: store artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: build-artifacts-${{ github.run_id }}-1
+          path: /tmp/images.tar
 
   cve-scan:
     runs-on: ubuntu-22.04
@@ -41,15 +50,3 @@ jobs:
           ignore-unfixed: false
           vuln-type: 'os,library'
           severity: 'CRITICAL,HIGH'
-
-  publish-sbom:
-    runs-on: ubuntu-22.04
-    needs: [build-container, cve-scan]
-    steps:
-      - name: publish sbom
-        uses: anchore/sbom-action@v0
-        with:
-          artifact-name: sbom.spdx
-          image: localbuild/testimage:${{ github.run_id }}-1
-          output-file: sbom.json
-          format: spdx-json
