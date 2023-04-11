@@ -31,10 +31,12 @@ jobs:
       - name: build container
         uses: docker/build-push-action@v4
         with:
-          attests: type=sbom,generator=image
+          attests: generator=image
           tags: localbuild/testimage:v1
           push: false
-          outputs: type=docker,dest=/tmp/images.tar
+          provenance: true
+          sbom: true
+          outputs: dest=/tmp/images.tar
 
       - name: store artifact
         uses: actions/upload-artifact@v3
