@@ -12,6 +12,11 @@ on:
     paths:
       - Dockerfile
       - hashicorp.asc
+      
+concurrency:
+  group: security-${{ github.head_ref || github.run_id }}-1
+  cancel-in-progress: true
+
 jobs:
   build-container:
     runs-on: ubuntu-22.04
