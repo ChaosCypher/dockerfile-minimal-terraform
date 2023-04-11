@@ -37,10 +37,13 @@ jobs:
           push: false
           provenance: true
           sbom: true
-          outputs: dest=./images.tar
+          outputs: dest=/tmp/images.tar
+          
+      - name: check dir
+        run: ls /tmp
 
       - name: store artifact
         uses: actions/upload-artifact@v3
         with:
           name: container-artifact
-          path: ./images.tar
+          path: /tmp/images.tar
