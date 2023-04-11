@@ -31,7 +31,7 @@ jobs:
       - name: build container
         uses: docker/build-push-action@v4
         with:
-          attests: type=sbom,type=provenance,generator=image
+          attests: type=sbom,generator=image
           tags: localbuild/testimage:v1
           push: false
           outputs: type=docker-container,dest=/tmp/images.tar
