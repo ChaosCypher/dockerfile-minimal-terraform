@@ -25,7 +25,7 @@ jobs:
       - name: fetch image artifact
         uses: actions/download-artifact@v3
         with:
-          name: build-artifacts-${{ github.run_id }}-1
+          name: localbuild/testimage:v1
           path: /tmp/images.tar
           
       - name: load images
@@ -38,7 +38,7 @@ jobs:
       - name: cve scan
         uses: aquasecurity/trivy-action@master
         with:
-          image-ref: localbuild/testimage:${{ github.run_id }}-1
+          image-ref: localbuild/testimage:v1
           format: 'table'
           exit-code: '1'
           ignore-unfixed: false
