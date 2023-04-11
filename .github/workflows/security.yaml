@@ -1,53 +1,36 @@
 ---
 name: security check
 on:
-  workflow_run:
-    workflows: ["build"]
+  pull_request:
+    branches:
+      - "main"
+    types:
+      - edited
+      - opened
+      - reopened
+      - synchronize
+      - ready_for_review
+    paths:
+      - Dockerfile
 
 concurrency:
   group: security-${{ github.head_ref || github.run_id }}-1
   cancel-in-progress: true
 
 jobs:
-  load-container:
-    runs-on: ubuntu-22.04
-    if: ${{ github.event.workflow_run.conclusion == 'success' }}
-    steps:
-      - name: get artifact
-        uses: actions/github-script@v6
-        with:
-          script: |
-            let allArtifacts = await github.rest.actions.listWorkflowRunArtifacts({
-               owner: context.repo.owner,
-               repo: context.repo.repo,
-               run_id: context.payload.workflow_run.id,
-            });
-            let matchArtifact = allArtifacts.data.artifacts.filter((artifact) => {
-              return artifact.name == "pr_number"
-            })[0];
-            let download = await github.rest.actions.downloadArtifact({
-               owner: context.repo.owner,
-               repo: context.repo.repo,
-               artifact_id: matchArtifact.id,
-               archive_format: 'zip',
-            });
-            let fs = require('fs');
-            fs.writeFileSync(`${process.env.GITHUB_WORKSPACE}/pr_number.zip`, Buffer.from(download.data))
-            
-      - name: unzip artifact
-        run: unzip pr_number.zip
-          
-      - name: load images
-        run: docker load --input ./images.tar
-          
   cve-scan:
     runs-on: ubuntu-22.04
-    needs: load-container
     steps:
+      - name: build local container
+        uses: docker/build-push-action@v4
+        with:
+          tags: localbuild/testimage:${{ github.run_id }}-1
+          push: false
+          load: true
       - name: cve scan
         uses: aquasecurity/trivy-action@master
         with:
-          image-ref: localbuild/testimage:v1
+          image-ref: localbuild/testimage:${{ github.run_id }}-1
           format: 'table'
           exit-code: '1'
           ignore-unfixed: false
