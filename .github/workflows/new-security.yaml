@@ -38,7 +38,7 @@ jobs:
             fs.writeFileSync(`${process.env.GITHUB_WORKSPACE}/container-artifact.zip`, Buffer.from(download.data));
             
       - name: unzip artifact
-        run: unzip pr_number.zip
+        run: unzip container-artifact.zip
           
       - name: load images
         run: docker load --input ./images.tar
