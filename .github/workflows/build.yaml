@@ -24,6 +24,8 @@ jobs:
     steps:
       - name: set up docker buildx
         uses: docker/setup-buildx-action@v2
+        with:
+          install: true
 
       - name: build container
         uses: docker/build-push-action@v4
