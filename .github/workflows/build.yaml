@@ -32,7 +32,9 @@ jobs:
           sbom: true
           tags: localbuild/testimage:v1
           push: false
-          outputs: type=image,dest=/tmp/images.tar
+          
+      - name: export image
+        run: docker save localbuild/testimage:v1 > /tmp/images.tar
           
       - name: store artifact
         uses: actions/upload-artifact@v3
