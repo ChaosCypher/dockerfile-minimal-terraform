@@ -36,7 +36,7 @@ jobs:
           provenance: false
           sbom: true
           tags: localbuild/testimage:v1
-          push: true
+          push: false
 
       - name: store artifact
         uses: actions/upload-artifact@v3
