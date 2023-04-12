@@ -39,7 +39,7 @@ jobs:
           sbom: true
           
       - name: tar image
-        run: docker save -o /tmp/images.tar localbuild/testimage:v1
+        run: docker images
 
       - name: store artifact
         uses: actions/upload-artifact@v3
