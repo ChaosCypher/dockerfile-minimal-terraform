@@ -41,7 +41,6 @@ jobs:
           tags: localbuild/testimage:v1
           push: false
           builder: ${{ steps.buildx.outputs.name }}
-          outputs: dest=/tmp/images.tar
           
       - name: save docker image to tar
         run: docker save ${{ steps.image-output.outputs.imageid }} > /tmp/images.tar
