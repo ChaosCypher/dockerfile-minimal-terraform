@@ -33,13 +33,13 @@ jobs:
         uses: docker/build-push-action@v4
         id: image-output
         with:
+          load: true
           provenance: true
           sbom: true
           platforms: linux/amd64
           tags: localbuild/testimage:v1
           push: false
           builder: ${{ steps.buildx.outputs.name }}
-          outputs: type=container,dest=/tmp/images.tar
           
       - name: list images
         run: docker images
