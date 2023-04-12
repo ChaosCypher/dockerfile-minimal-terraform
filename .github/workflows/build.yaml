@@ -34,7 +34,9 @@ jobs:
           sbom: true
           tags: localbuild/testimage:v1
           push: false
-          outputs: dest=/tmp/images.tar
+          
+      - name: list images
+        run: docker images
           
       - name: store artifact
         uses: actions/upload-artifact@v3
