@@ -1,5 +1,3 @@
-# syntax=docker/dockerfile:1.5
-
 FROM alpine:3.17.3 AS stage1
 
 ARG CA_CERT_VERSION="20220614-r4"
@@ -39,7 +37,7 @@ COPY --from=stage1 /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
     # /etc/passwd is required to run as a non-root user in a scratch container
 COPY --from=stage1 /etc_passwd /etc/passwd
 
-FROM stage2 as final
+FROM stage2
 
 LABEL minimal-terraform.apk-ca-cert-version="${CA_CERT_VERSION}"
 LABEL minimal-terraform.apk-gnupg-version="${GNUPG_VERSION}"
