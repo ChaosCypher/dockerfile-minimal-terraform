@@ -39,6 +39,7 @@ jobs:
           tags: localbuild/testimage:v1
           push: false
           builder: ${{ steps.buildx.outputs.name }}
+          outputs: type=docker,dest=/tmp/images.tar
           
       - name: list images
         run: docker images
