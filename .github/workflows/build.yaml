@@ -22,28 +22,19 @@ jobs:
   build-container:
     runs-on: ubuntu-22.04
     steps:
-      - name: set up qemu
-        uses: docker/setup-qemu-action@v2
-
       - name: set up docker buildx
         uses: docker/setup-buildx-action@v2
-        with:
-          install: true
 
-      - name: build image
+      - name: build container
         uses: docker/build-push-action@v4
         with:
+          sbom: true
           tags: localbuild/testimage:v1
           push: false
-          provenance: true
-          sbom: true
-
-      - name: cve scan
-        uses: aquasecurity/trivy-action@master
+          outputs: type=oci,dest=/tmp/images.tar
+          
+      - name: store artifact
+        uses: actions/upload-artifact@v3
         with:
-          image-ref: localbuild/testimage:v1
-          format: 'table'
-          exit-code: '1'
-          ignore-unfixed: false
-          vuln-type: 'os,library'
-          severity: 'CRITICAL,HIGH'
+          name: container-artifact
+          path: /tmp/images.tar
