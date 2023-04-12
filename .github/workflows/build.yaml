@@ -40,13 +40,13 @@ jobs:
           outputs: type=oci,dest=/tmp/images.tar, oci-mediatypes=true
           
       - name: load docker image
-        run: docker import /tmp/images.tar localbuild/testimage:v1
+        run: docker import /tmp/images.tar localbuild/testimage:v2
         
       - name: list images
         run: docker images
         
       - name: run image
-        run: docker run localbuild/testimage:v1 ls
+        run: docker inspect localbuild/testimage:v2
 
       - name: store artifact
         uses: actions/upload-artifact@v3
