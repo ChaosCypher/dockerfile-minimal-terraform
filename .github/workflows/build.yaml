@@ -36,7 +36,7 @@ jobs:
           sbom: true
           tags: localbuild/testimage:v1
           push: false
-          output: dest=/tmp/images.tar
+          outputs: dest=/tmp/images.tar
           
       - name: list images
         run: |
