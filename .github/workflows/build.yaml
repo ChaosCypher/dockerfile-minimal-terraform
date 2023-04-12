@@ -28,12 +28,10 @@ jobs:
           install: true
           version: v0.10.4
           driver: docker-container
-          driver-opts: image=moby/buildkit:master
 
       - name: build final image
         uses: docker/build-push-action@v4
         with:
-          load: true
           provenance: false
           sbom: true
           tags: localbuild/testimage:v1
