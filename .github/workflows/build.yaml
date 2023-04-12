@@ -35,6 +35,7 @@ jobs:
           provenance: false
           sbom: true
           tags: localbuild/testimage:v1
+          target: stage2
           push: false
           outputs: type=oci,dest=/tmp/images.tar, oci-mediatypes=true
 
