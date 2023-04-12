@@ -28,7 +28,10 @@ jobs:
         with:
           version: v0.10.4
           driver: docker-container
-          platforms: linux/amd64
+          config-inline: |
+            debug = true
+            [registry."docker.io"]
+              mirrors = ["localhost:5000"]
 
       - name: build final image
         uses: docker/build-push-action@v4
