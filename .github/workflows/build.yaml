@@ -27,13 +27,13 @@ jobs:
         uses: docker/setup-buildx-action@v2
         with:
           version: v0.10.4
-          driver: docker-container
+          driver: docker
 
       - name: build final image
         uses: docker/build-push-action@v4
         with:
           load: true
-          provenance: false
+          provenance: true
           sbom: true
           tags: localbuild/testimage:v1
           push: false
