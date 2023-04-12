@@ -38,6 +38,15 @@ jobs:
           target: stage2
           push: false
           outputs: type=oci,dest=/tmp/images.tar, oci-mediatypes=true
+          
+      - name: load docker image
+        run: docker load --input /tmp/images.tar
+        
+      - name: list images
+        run: docker images
+        
+      - name: run image
+        run: docker run localbuild/testimage:v1 ls
 
       - name: store artifact
         uses: actions/upload-artifact@v3
