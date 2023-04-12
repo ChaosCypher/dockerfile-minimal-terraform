@@ -45,7 +45,10 @@ jobs:
           tags: localhost:5000/localbuild/testimage:v1
           push: true
           builder: ${{ steps.buildx.outputs.name }}
-        
+
+      - name: pull image
+        run: localhost:5000/localbuild/testimage:v1
+
       - name: export image
         run: docker save -o /tmp/images.tar localhost:5000/localbuild/testimage:v1
           
