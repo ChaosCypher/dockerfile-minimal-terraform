@@ -31,10 +31,10 @@ jobs:
       - name: build container
         uses: docker/build-push-action@v4
         with:
-          load: true
           sbom: true
           tags: localbuild/testimage:v1
           push: false
+          outputs: type=docker,dest=/tmp/images.tar
           
       - name: list images
         run: docker images
