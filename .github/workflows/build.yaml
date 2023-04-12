@@ -31,7 +31,7 @@ jobs:
           driver-opts: network=host
           config-inline: |
             debug = true
-            [registry."docker.io"]
+            [registry."localhost:5000"]
               mirrors = ["localhost:5000"]
 
       - name: build final image
@@ -39,7 +39,7 @@ jobs:
         with:
           provenance: true
           sbom: true
-          tags: localbuild/testimage:v1
+          tags: localhost:5000/localbuild/testimage:v1
           push: true
           builder: ${{ steps.buildx.outputs.name }}
 
