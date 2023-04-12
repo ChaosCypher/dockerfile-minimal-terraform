@@ -40,7 +40,7 @@ jobs:
           outputs: type=image,name=localbuild/testimage:v1
           
       - name: tar image
-        run: ls /tmp
+        run: docker images
 
       - name: store artifact
         uses: actions/upload-artifact@v3
