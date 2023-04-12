@@ -26,6 +26,7 @@ jobs:
         uses: docker/setup-buildx-action@v2
         with:
           install: true
+          version: latest
 
       - name: build final image
         uses: docker/build-push-action@v4
