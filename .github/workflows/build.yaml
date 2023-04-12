@@ -27,7 +27,7 @@ jobs:
         with:
           install: true
           version: v0.10.4
-          driver: docker
+          driver: docker-container
 
       - name: build final image
         uses: docker/build-push-action@v4
