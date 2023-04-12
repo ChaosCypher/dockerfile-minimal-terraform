@@ -27,20 +27,11 @@ jobs:
         uses: docker/setup-buildx-action@v2
         with:
           version: v0.10.4
-          
-      - name: Cache Docker layers
-        uses: actions/cache@v3
-        with:
-          path: /tmp/.buildx-cache
-          key: ${{ runner.os }}-buildx-${{ github.sha }}
-          restore-keys: |
-            ${{ runner.os }}-buildx-
 
       - name: build final image
         uses: docker/build-push-action@v4
         with:
-          cache-from: type=local,src=/tmp/.buildx-cache
-          cache-to: type=local,dest=/tmp/.buildx-cache-new,mode=max
+          no-cache: true
           provenance: false
           sbom: true
           tags: localbuild/testimage:v1
