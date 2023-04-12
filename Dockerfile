@@ -1,3 +1,5 @@
+# syntax=docker/dockerfile:1.5
+
 FROM alpine:3.17.3 AS stage1
 
 ARG CA_CERT_VERSION="20220614-r4"
