@@ -32,7 +32,7 @@ jobs:
           config-inline: |
             debug = true
 
-      - name: build final image
+      - name: build image
         uses: docker/build-push-action@v4
         with:
           provenance: true
