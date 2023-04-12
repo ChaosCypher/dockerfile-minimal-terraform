@@ -3,7 +3,7 @@ name: build
 on:
   pull_request:
     branches:
-      - "main"
+      - main
     types:
       - edited
       - opened
@@ -28,9 +28,7 @@ jobs:
         with:
           version: v0.10.4
           driver: docker-container
-          driver-opts: network=host
-          config-inline: |
-            debug = true
+          platforms: linux/amd64
 
       - name: build image
         uses: docker/build-push-action@v4
@@ -42,8 +40,8 @@ jobs:
           push: false
           builder: ${{ steps.buildx.outputs.name }}
           
-      - name: save docker image to tar
-        run: docker save ${{ steps.image-output.outputs.imageid }} > /tmp/images.tar
+      - name: list images
+        run: docker images
 
       - name: store artifact
         uses: actions/upload-artifact@v3
