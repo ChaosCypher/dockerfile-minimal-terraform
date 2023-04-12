@@ -34,6 +34,7 @@ jobs:
 
       - name: build image
         uses: docker/build-push-action@v4
+        id: image
         with:
           provenance: true
           sbom: true
@@ -41,6 +42,9 @@ jobs:
           push: false
           builder: ${{ steps.buildx.outputs.name }}
           outputs: dest=/tmp/images.tar
+          
+      - name: save docker image to tar
+        run: docker save ${{ steps.image.outputs.imageid }} > /tmp/images.tar
 
       - name: store artifact
         uses: actions/upload-artifact@v3
