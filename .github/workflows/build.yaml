@@ -37,12 +37,7 @@ jobs:
           tags: localbuild/testimage:v1
           push: false
           outputs: dest=/tmp/images.tar
-          
-      - name: list images
-        run: |
-          docker images
-          docker save localbuild/testimage:v1 > /tmp/images.tar
-          
+
       - name: store artifact
         uses: actions/upload-artifact@v3
         with:
