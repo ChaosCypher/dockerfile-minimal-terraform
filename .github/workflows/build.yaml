@@ -37,7 +37,6 @@ jobs:
           sbom: true
           tags: localhost:5000/localbuild/testimage:v1
           push: false
-          load: true
           builder: ${{ steps.buildx.outputs.name }}
 
       - name: list images
