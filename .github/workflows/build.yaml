@@ -28,8 +28,7 @@ jobs:
         with:
           version: v0.10.4
           driver: docker-container
-          config-inline: |
-            mirrors = ["localhost:5000"]
+          platforms: linux/amd64
 
       - name: build final image
         uses: docker/build-push-action@v4
@@ -37,7 +36,8 @@ jobs:
           provenance: true
           sbom: true
           tags: localhost:5000/localbuild/testimage:v1
-          push: true
+          push: false
+          load: true
           builder: ${{ steps.buildx.outputs.name }}
 
       - name: list images
