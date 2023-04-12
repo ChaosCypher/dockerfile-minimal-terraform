@@ -35,12 +35,12 @@ jobs:
           provenance: false
           sbom: true
           tags: localbuild/testimage:v1
-          target: stage2
+          target: final
           push: false
           outputs: type=oci,dest=/tmp/images.tar, oci-mediatypes=true
           
       - name: load docker image
-        run: docker load --input /tmp/images.tar
+        run: docker import /tmp/images.tar localbuild/testimage:v1
         
       - name: list images
         run: docker images
