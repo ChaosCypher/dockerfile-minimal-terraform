@@ -26,35 +26,17 @@ jobs:
         uses: docker/setup-buildx-action@v2
         with:
           install: true
-          version: v0.9.1
-
-      - name: build stage 1
-        uses: docker/build-push-action@v4
-        with:
-          cache-from: type=gha,scope=cached-stage
-          cache-to: type=gha,scope=cached-stage,mode=max
-          outputs: type=cacheonly
-          target: stage1
-          
-      - name: build stage 2
-        uses: docker/build-push-action@v4
-        with:
-          cache-from: type=gha,scope=cached-stage
-          cache-to: type=gha,scope=cached-stage,mode=max
-          outputs: type=cacheonly
-          target: stage2
 
       - name: build final image
         uses: docker/build-push-action@v4
         with:
-          cache-from: type=gha,scope=cached-stage
+          load: true
           sbom: true
           tags: localbuild/testimage:v1
           push: false
-          outputs: type=docker,dest=/tmp/images.tar
           
       - name: list images
-        run: docker images
+        run: docker save localbuild/testimage:v1 > /tmp/images.tar
           
       - name: store artifact
         uses: actions/upload-artifact@v3
