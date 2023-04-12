@@ -46,7 +46,7 @@ jobs:
           tags: localbuild/testimage:v1
           push: false
           builder: ${{ steps.buildx.outputs.name }}
-          outputs: type=oci,dest=/tmp/images.tar, oci-mediatypes=true
+          outputs: type=docker,dest=/tmp/images.tar
           
       - name: load docker image
         run: docker import /tmp/images.tar localbuild/testimage:v1
