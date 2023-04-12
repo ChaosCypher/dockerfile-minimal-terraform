@@ -27,20 +27,18 @@ jobs:
         uses: docker/setup-buildx-action@v2
         with:
           version: v0.10.4
+          driver: docker-container
 
       - name: build final image
         uses: docker/build-push-action@v4
         with:
+          load: true
           provenance: false
           sbom: true
           tags: localbuild/testimage:v1
           push: false
           builder: ${{ steps.buildx.outputs.name }}
-          outputs: type=oci,dest=/tmp/images.tar,oci-mediatypes=true
-          
-      - name: load docker image
-        run: docker import /tmp/images.tar localbuild/testimage:v1
-        
+
       - name: list images
         run: docker images
         
