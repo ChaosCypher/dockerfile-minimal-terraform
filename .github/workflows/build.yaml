@@ -27,7 +27,7 @@ jobs:
         with:
           install: true
           version: v0.10.4
-          driver: docker
+          driver: docker-container
           driver-opts: image=moby/buildkit:master
 
       - name: build final image
