@@ -37,10 +37,10 @@ jobs:
           push: false
           provenance: true
           sbom: true
-          load: true
+          outputs: type=image,dest=/tmp/images.tar
           
       - name: tar image
-        run: docker images
+        run: ls /tmp
 
       - name: store artifact
         uses: actions/upload-artifact@v3
