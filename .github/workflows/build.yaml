@@ -28,7 +28,8 @@ jobs:
         with:
           version: v0.10.4
           driver: docker-container
-          driver-opts: network=host
+          driver-opts: |
+            "env.no_proxy=localhost,127.0.0.1,.mydomain"
 
       - name: build final image
         uses: docker/build-push-action@v4
