@@ -39,7 +39,7 @@ COPY --from=stage1 /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
     # /etc/passwd is required to run as a non-root user in a scratch container
 COPY --from=stage1 /etc_passwd /etc/passwd
 
-FROM stage2
+FROM stage2 as final
 
 LABEL minimal-terraform.apk-ca-cert-version="${CA_CERT_VERSION}"
 LABEL minimal-terraform.apk-gnupg-version="${GNUPG_VERSION}"
