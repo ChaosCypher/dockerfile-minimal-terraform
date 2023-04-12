@@ -32,7 +32,6 @@ jobs:
       - name: build final image
         uses: docker/build-push-action@v4
         with:
-          load: true
           provenance: false
           sbom: true
           tags: localbuild/testimage:v1
