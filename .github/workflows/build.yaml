@@ -28,10 +28,18 @@ jobs:
           install: true
           version: v0.9.1
 
-      - name: build container
+      - name: build base image
         uses: docker/build-push-action@v4
         with:
-          load: true
+          cache-from: type=gha,scope=cached-stage
+          cache-to: type=gha,scope=cached-stage,mode=max
+          outputs: type=cacheonly
+          target: builder
+
+      - name: build final image
+        uses: docker/build-push-action@v4
+        with:
+          cache-from: type=gha,scope=cached-stage
           sbom: true
           tags: localbuild/testimage:v1
           push: false
