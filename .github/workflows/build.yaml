@@ -28,6 +28,7 @@ jobs:
         with:
           version: v0.10.4
           driver: docker-container
+          driver-opts: network=host
 
       - name: build final image
         uses: docker/build-push-action@v4
