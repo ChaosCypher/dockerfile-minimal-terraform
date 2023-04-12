@@ -37,13 +37,13 @@ jobs:
           push: false
           provenance: true
           sbom: true
-          outputs: type=image,name=localbuild/testimage:v1
-          
-      - name: tar image
-        run: docker images
 
-      - name: store artifact
-        uses: actions/upload-artifact@v3
+      - name: cve scan
+        uses: aquasecurity/trivy-action@master
         with:
-          name: container-artifact
-          path: /tmp/images.tar
+          image-ref: localbuild/testimage:v1
+          format: 'table'
+          exit-code: '1'
+          ignore-unfixed: false
+          vuln-type: 'os,library'
+          severity: 'CRITICAL,HIGH'
