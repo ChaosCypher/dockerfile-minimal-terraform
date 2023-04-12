@@ -38,14 +38,9 @@ jobs:
           provenance: true
           sbom: true
           tags: localbuild/testimage:v1
-          push: true
+          push: false
           builder: ${{ steps.buildx.outputs.name }}
-
-      - name: list images
-        run: docker images
-        
-      - name: run image
-        run: docker inspect localbuild/testimage:v1
+          outputs: dest=/tmp/images.tar
 
       - name: store artifact
         uses: actions/upload-artifact@v3
