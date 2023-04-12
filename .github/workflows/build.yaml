@@ -23,6 +23,7 @@ jobs:
     runs-on: ubuntu-22.04
     steps:
       - name: set up docker buildx
+        id: buildx
         uses: docker/setup-buildx-action@v2
         with:
           version: v0.10.4
@@ -36,6 +37,7 @@ jobs:
           sbom: true
           tags: localbuild/testimage:v1
           push: false
+          builder: ${{ steps.buildx.outputs.name }}
           outputs: type=oci,dest=/tmp/images.tar, oci-mediatypes=true
           
       - name: load docker image
