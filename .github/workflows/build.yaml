@@ -42,7 +42,7 @@ jobs:
           provenance: true
           sbom: true
           platforms: linux/amd64
-          tags: localhost:5000localbuild/testimage:v1
+          tags: localhost:5000/localbuild/testimage:v1
           push: true
           builder: ${{ steps.buildx.outputs.name }}
           
