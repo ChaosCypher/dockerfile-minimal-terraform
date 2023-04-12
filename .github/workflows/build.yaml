@@ -21,6 +21,11 @@ concurrency:
 jobs:
   build-container:
     runs-on: ubuntu-22.04
+    services:
+      registry:
+        image: registry:2
+        ports:
+          - 5000:5000
     steps:
       - name: set up docker buildx
         id: buildx
@@ -28,17 +33,17 @@ jobs:
         with:
           version: v0.10.4
           driver: docker-container
+          driver-opts: network=host
 
       - name: build image
         uses: docker/build-push-action@v4
         id: image-output
         with:
-          load: true
           provenance: true
           sbom: true
           platforms: linux/amd64
-          tags: localbuild/testimage:v1
-          push: false
+          tags: localhost:5000localbuild/testimage:v1
+          push: true
           builder: ${{ steps.buildx.outputs.name }}
           
       - name: list images
