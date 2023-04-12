@@ -36,7 +36,7 @@ jobs:
         with:
           provenance: true
           sbom: true
-          tags: 0.0.0.0:5000/localbuild/testimage:v1
+          tags: localhost:5000/localbuild/testimage:v1
           push: true
           builder: ${{ steps.buildx.outputs.name }}
 
