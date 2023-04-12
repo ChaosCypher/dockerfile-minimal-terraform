@@ -28,42 +28,6 @@ jobs:
         with:
           version: v0.10.4
 
-      - name: cache stage 1
-        uses: actions/cache@v3
-        with:
-          path: /tmp/.buildx-stage-1-cache
-          key: ${{ runner.os }}-buildx-stage-1-${{ github.sha }}
-          restore-keys: |
-            ${{ runner.os }}-buildx-stage-1-
-
-      - name: cache stage 2
-        uses: actions/cache@v3
-        with:
-          path: /tmp/.buildx-stage-2-cache
-          key: ${{ runner.os }}-buildx-stage-2-${{ github.sha }}
-          restore-keys: |
-            ${{ runner.os }}-buildx-stage-2-
-
-      - name: build stage 1
-        uses: docker/build-push-action@v4
-        with:
-          target: stage1
-          tags: localbuild/stage1
-          push: false
-          builder: ${{ steps.buildx.outputs.name }}
-          cache-from: type=local,src=/tmp/.buildx-stage-1-cache
-          cache-to: type=local,dest=/tmp/.buildx-stage-1-cache
-          
-      - name: build stage 2
-        uses: docker/build-push-action@v4
-        with:
-          target: stage2
-          tags: localbuild/stage2
-          push: false
-          builder: ${{ steps.buildx.outputs.name }}
-          cache-from: type=local,src=/tmp/.buildx-stage-1-cache
-          cache-to: type=local,dest=/tmp/.buildx-stage-2-cache
-
       - name: build final image
         uses: docker/build-push-action@v4
         with:
@@ -72,7 +36,6 @@ jobs:
           tags: localbuild/testimage:v1
           push: false
           builder: ${{ steps.buildx.outputs.name }}
-          cache-from: type=local,src=/tmp/.buildx-stage-2-cache
           outputs: type=oci,dest=/tmp/images.tar,oci-mediatypes=true
           
       - name: load docker image
