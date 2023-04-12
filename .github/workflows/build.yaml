@@ -48,27 +48,21 @@ jobs:
         uses: docker/build-push-action@v4
         with:
           target: stage1
-          provenance: false
-          sbom: true
           tags: localbuild/stage1
           push: false
           builder: ${{ steps.buildx.outputs.name }}
           cache-from: type=local,src=/tmp/.buildx-stage-1-cache
           cache-to: type=local,dest=/tmp/.buildx-stage-1-cache
-          outputs: type=oci,oci-mediatypes=true
           
       - name: build stage 2
         uses: docker/build-push-action@v4
         with:
           target: stage2
-          provenance: false
-          sbom: true
           tags: localbuild/stage2
           push: false
           builder: ${{ steps.buildx.outputs.name }}
           cache-from: type=local,src=/tmp/.buildx-stage-1-cache
           cache-to: type=local,dest=/tmp/.buildx-stage-2-cache
-          outputs: type=oci,oci-mediatypes=true
 
       - name: build final image
         uses: docker/build-push-action@v4
