@@ -37,6 +37,7 @@ jobs:
           push: false
           provenance: true
           sbom: true
+          load: true
           
       - name: tar image
         run: docker images
