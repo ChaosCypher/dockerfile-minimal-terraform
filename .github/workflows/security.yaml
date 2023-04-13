@@ -53,10 +53,3 @@ jobs:
           ignore-unfixed: false
           vuln-type: 'os,library'
           severity: 'CRITICAL,HIGH'
-          
-  check-cve:
-    runs-on: ubuntu-22.04
-    steps:
-      - uses: haya14busa/action-workflow_run-status@v1
-      - uses: actions/checkout@v3
-      - run: exit 0
