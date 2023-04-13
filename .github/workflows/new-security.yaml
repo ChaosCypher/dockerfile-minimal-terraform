@@ -46,12 +46,14 @@ jobs:
           
           docker images
           
-          docker run localbuild/testimage:v1 --version
+          docker inspect localhost:5000/localbuild/testimage:v1
+          
+          docker run localhost:5000/localbuild/testimage:v1 --version
 
       - name: cve scan
         uses: aquasecurity/trivy-action@master
         with:
-          image-ref: localbuild/testimage:v1
+          image-ref: localhost:5000/localbuild/testimage:v1
           format: 'table'
           exit-code: '1'
           ignore-unfixed: false
