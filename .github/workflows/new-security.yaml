@@ -56,6 +56,7 @@ jobs:
           
   cve-scan:
     runs-on: ubuntu-22.04
+    if: ${{ always() }}
     needs: security-scan
     steps:
       - uses: actions/github-script@v6
