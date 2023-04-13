@@ -12,7 +12,7 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  security:
+  security-scan:
     runs-on: ubuntu-22.04
     if: ${{ github.event.workflow_run.conclusion == 'success' }}
     steps:
@@ -41,10 +41,10 @@ jobs:
         run: unzip container-artifact.zip
           
       - name: load image
-        run: docker load --input ./images.tar
+        run: |
+          docker load --input ./images.tar
 
       - name: cve scan
-        id: sec-scan
         uses: aquasecurity/trivy-action@master
         with:
           image-ref: localhost:5000/localbuild/testimage:v1
@@ -53,10 +53,11 @@ jobs:
           ignore-unfixed: false
           vuln-type: 'os,library'
           severity: 'CRITICAL,HIGH'
-          
+
   cve-scan:
     runs-on: ubuntu-22.04
-    needs: security
+    if: ${{ always() }}
+    needs: security-scan
     steps:
       - uses: actions/github-script@v6
         env:
@@ -69,6 +70,11 @@ jobs:
               head_sha: context.sha,
               name: "cve-scan",
               status: "completed",
-              conclusion: ${{ needs.security.result }},
-              details_url: ${{ github.event.workflow_run.html_url }},
+              conclusion: "${{ needs.security-scan.result }}",
+              details_url: process.env.parameter_url,
+              output: {
+                title: "cve-scan",
+                summary: "${{ needs.security-scan.result }}",
+                text: "${{ needs.security-scan.result }}",
+              },
             });
