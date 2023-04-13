@@ -46,7 +46,7 @@ jobs:
           
           docker images
           
-          docker run -ti localbuild/testimage:v1 --version
+          docker run localbuild/testimage:v1 --version
 
       - name: cve scan
         uses: aquasecurity/trivy-action@master
