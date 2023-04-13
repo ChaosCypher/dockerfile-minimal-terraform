@@ -69,4 +69,5 @@ jobs:
               name: "cve-scan",
               status: "completed",
               conclusion: "${{ needs.security-scan.result }}",
+              details_url: context.payload.workflow_run.html_url,
             });
