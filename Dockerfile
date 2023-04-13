@@ -7,7 +7,7 @@ ARG BUILDKIT_SBOM_SCAN_STAGE=true
 ARG CA_CERT_VERSION="20220614-r4"
 ARG GNUPG_VERSION="2.2.40-r0"
 ARG PLATFORM="linux_amd64"
-ARG TERRAFORM_VERSION="1.4.3"
+ARG TERRAFORM_VERSION="1.4.4"
 
 WORKDIR /
 
@@ -45,12 +45,9 @@ COPY --from=stage1 /etc_passwd /etc/passwd
 
 FROM stage2
 
-LABEL minimal-terraform.apk-ca-cert-version="${CA_CERT_VERSION}"
-LABEL minimal-terraform.apk-gnupg-version="${GNUPG_VERSION}"
 LABEL org.opencontainers.image.authors="jamie@chaoscypher.ca"
 LABEL org.opencontainers.image.source="https://github.com/ChaosCypher/dockerfile-minimal-terraform/blob/main/Dockerfile"
 LABEL org.opencontainers.image.vendor="ChaosCypher"
-LABEL minimal-terraform.terraform-version="${TERRAFORM_VERSION}"
 
 USER nobody
 
