@@ -1,0 +1,74 @@
+---
+name: security check
+on:
+  workflow_run:
+    workflows:
+      - build
+    types:
+      - completed
+
+concurrency:
+  group: security-${{ github.head_ref || github.run_id }}-1
+  cancel-in-progress: true
+
+jobs:
+  security-scan:
+    runs-on: ubuntu-22.04
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    steps:
+      - name: get artifact
+        uses: actions/github-script@v6
+        with:
+          script: |
+            let allArtifacts = await github.rest.actions.listWorkflowRunArtifacts({
+               owner: context.repo.owner,
+               repo: context.repo.repo,
+               run_id: context.payload.workflow_run.id,
+            });
+            let matchArtifact = allArtifacts.data.artifacts.filter((artifact) => {
+              return artifact.name == "container-artifact"
+            })[0];
+            let download = await github.rest.actions.downloadArtifact({
+               owner: context.repo.owner,
+               repo: context.repo.repo,
+               artifact_id: matchArtifact.id,
+               archive_format: 'zip',
+            });
+            let fs = require('fs');
+            fs.writeFileSync(`${process.env.GITHUB_WORKSPACE}/container-artifact.zip`, Buffer.from(download.data));
+            
+      - name: unzip artifact
+        run: unzip container-artifact.zip
+          
+      - name: load image
+        run: |
+          docker load --input ./images.tar
+
+      - name: cve scan
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: localhost:5000/localbuild/testimage:v1
+          format: 'table'
+          exit-code: '1'
+          ignore-unfixed: false
+          vuln-type: 'os,library'
+          severity: 'CRITICAL,HIGH'
+          
+  cve-scan:
+    runs-on: ubuntu-22.04
+    needs: security-scan
+    steps:
+      - uses: actions/github-script@v6
+        env:
+          parameter_url: '${{ github.event.workflow_run.html_url }}'
+        with:
+          script: |
+            await github.rest.checks.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              head_sha: context.sha,
+              name: "cve-scan",
+              status: "completed",
+              conclusion: ${{ needs.security.result }},
+              details_url: ${{ github.event.workflow_run.html_url }},
+            });
