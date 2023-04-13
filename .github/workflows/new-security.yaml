@@ -65,7 +65,7 @@ jobs:
             await github.rest.checks.create({
               owner: context.repo.owner,
               repo: context.repo.repo,
-              head_sha: context.sha,
+              head_sha: context.payload.workflow_run.head_sha,
               name: "cve-scan",
               status: "completed",
               conclusion: "${{ needs.security-scan.result }}",
