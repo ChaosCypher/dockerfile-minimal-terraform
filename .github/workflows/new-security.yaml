@@ -42,7 +42,7 @@ jobs:
           
       - name: load image
         run: |
-          docker import ./images.tar localhost:5000/localbuild/testimage:v1
+          docker load --input ./images.tar
           
           docker images
           
