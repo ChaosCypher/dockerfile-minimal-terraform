@@ -70,6 +70,11 @@ jobs:
               head_sha: context.sha,
               name: "cve-scan",
               status: "completed",
-              conclusion: ${{ needs.security-scan.result }},
-              details_url: ${{ github.event.workflow_run.html_url }},
+              conclusion: "${{ needs.security-scan.result }}",
+              details_url: process.env.parameter_url,
+              output: {
+                title: "cve-scan",
+                summary: "${{ needs.security-scan.result }}",
+                text: "${{ needs.security-scan.result }}",
+              },
             });
