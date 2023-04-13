@@ -43,12 +43,6 @@ jobs:
       - name: load image
         run: |
           docker load --input ./images.tar
-          
-          docker images
-          
-          docker inspect localhost:5000/localbuild/testimage:v1
-          
-          docker run localhost:5000/localbuild/testimage:v1 --version
 
       - name: cve scan
         uses: aquasecurity/trivy-action@master
