@@ -118,7 +118,7 @@ jobs:
 
   publish-sbom:
     runs-on: ubuntu-22.04
-    needs: publish-image
+    needs: [publish-image,auto-semver-release]
     steps:
       - name: checkout code
         uses: actions/checkout@v3
