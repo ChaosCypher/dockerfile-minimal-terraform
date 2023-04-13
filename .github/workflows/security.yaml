@@ -54,27 +54,20 @@ jobs:
           vuln-type: 'os,library'
           severity: 'CRITICAL,HIGH'
 
-  cve-scan:
+  scan-results:
     runs-on: ubuntu-22.04
     if: ${{ always() }}
     needs: security-scan
     steps:
       - uses: actions/github-script@v6
-        env:
-          parameter_url: '${{ github.event.workflow_run.html_url }}'
         with:
           script: |
             await github.rest.checks.create({
               owner: context.repo.owner,
               repo: context.repo.repo,
-              head_sha: context.sha,
+              head_sha: context.payload.workflow_run.head_sha,
               name: "cve-scan",
               status: "completed",
               conclusion: "${{ needs.security-scan.result }}",
-              details_url: process.env.parameter_url,
-              output: {
-                title: "cve-scan",
-                summary: "${{ needs.security-scan.result }}",
-                text: "${{ needs.security-scan.result }}",
-              },
+              details_url: context.payload.workflow_run.html_url,
             });
