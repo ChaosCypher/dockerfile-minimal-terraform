@@ -54,7 +54,7 @@ jobs:
           vuln-type: 'os,library'
           severity: 'CRITICAL,HIGH'
 
-  cve-scan:
+  scan-results:
     runs-on: ubuntu-22.04
     if: ${{ always() }}
     needs: security-scan
