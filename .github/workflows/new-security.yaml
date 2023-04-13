@@ -12,7 +12,7 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  cve-scan:
+  security-scan:
     runs-on: ubuntu-22.04
     if: ${{ github.event.workflow_run.conclusion == 'success' }}
     steps:
@@ -53,3 +53,22 @@ jobs:
           ignore-unfixed: false
           vuln-type: 'os,library'
           severity: 'CRITICAL,HIGH'
+          
+  cve-scan:
+    runs-on: ubuntu-22.04
+    needs: security-scan
+    steps:
+      - uses: actions/github-script@v6
+        env:
+          parameter_url: '${{ github.event.workflow_run.html_url }}'
+        with:
+          script: |
+            await github.rest.checks.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              head_sha: context.sha,
+              name: "cve-scan",
+              status: "completed",
+              conclusion: ${{ needs.security.result }},
+              details_url: ${{ github.event.workflow_run.html_url }},
+            });
