@@ -1,4 +1,8 @@
+# syntax=docker/dockerfile:1.5
+
 FROM alpine:3.17.3 AS stage1
+
+ARG BUILDKIT_SBOM_SCAN_STAGE=true
 
 ARG CA_CERT_VERSION="20220614-r4"
 ARG GNUPG_VERSION="2.2.40-r0"
@@ -29,6 +33,8 @@ RUN apk add --no-cache ca-certificates==${CA_CERT_VERSION} \
 
 FROM scratch as stage2
 
+ARG BUILDKIT_SBOM_SCAN_STAGE=true
+
 COPY --from=stage1 terraform /terraform
     # a /tmp directory is required by terraform
 COPY --from=stage1 /tmp /tmp
@@ -39,12 +45,9 @@ COPY --from=stage1 /etc_passwd /etc/passwd
 
 FROM stage2
 
-LABEL minimal-terraform.apk-ca-cert-version="${CA_CERT_VERSION}"
-LABEL minimal-terraform.apk-gnupg-version="${GNUPG_VERSION}"
 LABEL org.opencontainers.image.authors="jamie@chaoscypher.ca"
 LABEL org.opencontainers.image.source="https://github.com/ChaosCypher/dockerfile-minimal-terraform/blob/main/Dockerfile"
 LABEL org.opencontainers.image.vendor="ChaosCypher"
-LABEL minimal-terraform.terraform-version="${TERRAFORM_VERSION}"
 
 USER nobody
 
