@@ -160,17 +160,12 @@ jobs:
             
       - name: unzip artifact
         run: unzip container-artifact.zip
-          
-      - name: load image
-        run: docker load --input ./images.tar
-        
-      - name: tag artifact
-        run: docker tag localhost:5000/localbuild/testimage:v1 chaoscypher/minimal-terraform
 
       - name: build and push
         uses: docker/build-push-action@v4
         with:
           context: .
+          load: ./images.tar
           platforms: linux/amd64
           push: true
           tags: |
