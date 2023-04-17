@@ -165,7 +165,6 @@ jobs:
         uses: docker/build-push-action@v4
         with:
           context: ./images.tar
-          load: true
           platforms: linux/amd64
           push: true
           tags: |
