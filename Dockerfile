@@ -46,7 +46,6 @@ COPY --from=stage1 /etc_passwd /etc/passwd
 FROM stage2 as final
 
 LABEL org.opencontainers.image.authors="jamie@chaoscypher.ca"
-LABEL org.opencontainers.image.documentation="https://github.com/ChaosCypher/dockerfile-minimal-terraform/blob/main/README.md"
 LABEL org.opencontainers.image.source="https://github.com/ChaosCypher/dockerfile-minimal-terraform/blob/main/Dockerfile"
 LABEL org.opencontainers.image.vendor="ChaosCypher"
 
