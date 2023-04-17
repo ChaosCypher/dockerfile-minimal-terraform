@@ -70,9 +70,7 @@ jobs:
               version = [tagNames[0], tagNames[1], Number(tagNames[2]) + 1];
             }
             
-            const semVer = version.split('.');
-            
-            core.setOutput('major-version', semVer[0])
+            core.setOutput('major-version', version[0])
             
             return version.join('.');
             
