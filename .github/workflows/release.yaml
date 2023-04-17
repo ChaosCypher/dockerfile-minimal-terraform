@@ -160,17 +160,18 @@ jobs:
             
       - name: unzip artifact
         run: unzip container-artifact.zip
-
-      - name: build and push
-        uses: docker/build-push-action@v4
-        with:
-          context: ./images.tar
-          platforms: linux/amd64
-          push: true
-          tags: |
-            chaoscypher/minimal-terraform:latest
-            chaoscypher/minimal-terraform:${{ needs.auto-semver-release.outputs.version }}
-            chaoscypher/minimal-terraform:${{ needs.auto-semver-release.outputs.major-version }}
+        
+      - name: tag image
+        run: |
+          docker tag localhost:5000/localbuild/testimage:v1 chaoscypher/minimal-terraform:latest
+          docker tag localhost:5000/localbuild/testimage:v1 chaoscypher/minimal-terraform:${{ needs.auto-semver-release.outputs.version }}
+          docker tag localhost:5000/localbuild/testimage:v1 chaoscypher/minimal-terraform:${{ needs.auto-semver-release.outputs.major-version }}
+          
+      - name: push image
+        run: |
+          docker push chaoscypher/minimal-terraform:latest
+          docker push chaoscypher/minimal-terraform:${{ needs.auto-semver-release.outputs.version }}
+          docker push chaoscypher/minimal-terraform:${{ needs.auto-semver-release.outputs.major-version }}
 
   publish-sbom:
     runs-on: ubuntu-22.04
