@@ -59,7 +59,7 @@ jobs:
     needs: security-scan
     steps:
       - name: post results to origin pull request
-      - uses: actions/github-script@v6
+        uses: actions/github-script@v6
         with:
           script: |
             await github.rest.checks.create({
