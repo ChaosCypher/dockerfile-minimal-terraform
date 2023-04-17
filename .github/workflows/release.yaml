@@ -94,7 +94,7 @@ jobs:
   get-workflow-id:
     runs-on: ubuntu-22.04
     outputs:
-      workflow-id: ${{ steps.workflow-id.outputs.result }}
+      workflow-id: ${{ steps.workflow-id.outputs.workflow-id }}
     steps:
       - name: get workflow run id
         id: workflow-id
