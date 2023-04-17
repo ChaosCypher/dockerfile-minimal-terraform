@@ -23,7 +23,7 @@ jobs:
     runs-on: ubuntu-22.04
     services:
       registry:
-        image: registry:2.8.1
+        image: registry:2.8.1@sha256:7c8b70990dad7e4325bf26142f59f77c969c51e079918f4631767ac8d49e22fb
         ports:
           - 5000:5000
     steps:
