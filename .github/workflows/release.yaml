@@ -75,6 +75,38 @@ jobs:
             core.setOutput('major-version', semVer[0])
             
             return version.join('.');
+            
+  get-workflow-id:
+    runs-on: ubuntu-22.04
+    outputs:
+      workflow-id: ${{ steps.workflow-id.outputs.result }}
+    steps:
+      - name: get workflow run id
+        id: workflow-id
+        uses: actions/github-script@v6
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const pullRequest = await github.rest.pulls.get({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              pull_number: context.payload.pull_request.number
+            });
+            const commit = pullRequest.data.head.sha;
+            const workflowRuns = await github.rest.actions.listWorkflowRunsForRepo({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              branch: pullRequest.data.head.ref,
+              event: 'pull_request',
+              status: 'completed'
+            });
+            const workflowRun = workflowRuns.data.workflow_runs.find((run) => {
+              return run.head_sha === commit && run.event === 'pull_request';
+            });
+            
+            core.setOutput('workflow-id', workflowRun.id)
+
+            console.log(`Workflow ID: ${workflowRun.id}`);
 
       - name: create release
         uses: actions/github-script@v6.4.1
@@ -94,8 +126,9 @@ jobs:
             await github.rest.repos.createRelease(createReleaseParams);
 
   publish-image:
+    if: github.event.pull_request.merged
     runs-on: ubuntu-22.04
-    needs: auto-semver-release
+    needs: [auto-semver-release,get-workflow-id]
     steps:
       - name: checkout code
         uses: actions/checkout@v3
@@ -105,6 +138,36 @@ jobs:
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: get artifact
+        uses: actions/github-script@v6
+        with:
+          script: |
+            let allArtifacts = await github.rest.actions.listWorkflowRunArtifacts({
+               owner: context.repo.owner,
+               repo: context.repo.repo,
+               run_id: ${{ needs.get-workflow-id.outputs.workflow-id }},
+            });
+            let matchArtifact = allArtifacts.data.artifacts.filter((artifact) => {
+              return artifact.name == "container-artifact"
+            })[0];
+            let download = await github.rest.actions.downloadArtifact({
+               owner: context.repo.owner,
+               repo: context.repo.repo,
+               artifact_id: matchArtifact.id,
+               archive_format: 'zip',
+            });
+            let fs = require('fs');
+            fs.writeFileSync(`${process.env.GITHUB_WORKSPACE}/container-artifact.zip`, Buffer.from(download.data));
+            
+      - name: unzip artifact
+        run: unzip container-artifact.zip
+          
+      - name: load image
+        run: docker load --input ./images.tar
+        
+      - name: tag artifact
+        run: docker tag localhost:5000/localbuild/testimage:v1 chaoscypher/minimal-terraform
 
       - name: build and push
         uses: docker/build-push-action@v4
