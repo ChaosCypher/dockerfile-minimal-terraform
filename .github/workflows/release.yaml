@@ -164,8 +164,8 @@ jobs:
       - name: build and push
         uses: docker/build-push-action@v4
         with:
-          context: .
-          load: ./images.tar
+          context: ./images.tar
+          load: true
           platforms: linux/amd64
           push: true
           tags: |
