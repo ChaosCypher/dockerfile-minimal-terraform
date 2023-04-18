@@ -47,7 +47,7 @@ COPY --from=stage1 /etc_passwd /etc/passwd
 
 ARG BUILDKIT_SBOM_SCAN_STAGE=true
 
-FROM stage2 as final
+FROM stage2
 
 ARG BUILDKIT_SBOM_SCAN_CONTEXT=true
 
