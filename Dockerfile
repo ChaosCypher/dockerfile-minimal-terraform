@@ -2,6 +2,8 @@
 
 FROM alpine:3.17.3 AS stage1
 
+ARG BUILDKIT_SBOM_SCAN_CONTEXT=true
+
 ARG CA_CERT_VERSION="20220614-r4"
 ARG GNUPG_VERSION="2.2.40-r0"
 ARG PLATFORM="linux_amd64"
@@ -33,6 +35,8 @@ ARG BUILDKIT_SBOM_SCAN_STAGE=true
 
 FROM scratch as stage2
 
+ARG BUILDKIT_SBOM_SCAN_CONTEXT=true
+
 COPY --from=stage1 terraform /terraform
     # a /tmp directory is required by terraform
 COPY --from=stage1 /tmp /tmp
@@ -43,7 +47,9 @@ COPY --from=stage1 /etc_passwd /etc/passwd
 
 ARG BUILDKIT_SBOM_SCAN_STAGE=true
 
-FROM stage2
+FROM stage2 as final
+
+ARG BUILDKIT_SBOM_SCAN_CONTEXT=true
 
 LABEL org.opencontainers.image.authors="jamie@chaoscypher.ca"
 LABEL org.opencontainers.image.source="https://github.com/ChaosCypher/dockerfile-minimal-terraform/blob/main/Dockerfile"
