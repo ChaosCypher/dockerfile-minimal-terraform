@@ -45,6 +45,8 @@ COPY --from=stage1 /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
     # /etc/passwd is required to run as a non-root user in a scratch container
 COPY --from=stage1 /etc_passwd /etc/passwd
 
+ARG BUILDKIT_SBOM_SCAN_STAGE=true
+
 FROM stage2 as final
 
 ARG BUILDKIT_SBOM_SCAN_CONTEXT=true
