@@ -30,6 +30,8 @@ RUN apk add --no-cache ca-certificates==${CA_CERT_VERSION} \
         # create an entry for /etc/passwd file in the next stage
     && echo "nobody:x:65534:65534:Nobody:/:" > /etc_passwd \
     && find /tmp -type f -type d -exec rm -rf {} +
+    
+ARG BUILDKIT_SBOM_SCAN_STAGE=true
 
 FROM scratch as stage2
 
