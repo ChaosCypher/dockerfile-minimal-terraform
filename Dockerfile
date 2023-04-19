@@ -16,7 +16,7 @@ COPY hashicorp.asc hashicorp.asc
 # fail the Dockerfile build if any commands fail
 SHELL ["/bin/ash", "-eo", "pipefail", "-c"]
 
-RUN --mount /run/src/extras/sbom-stage1/proc/mounts \ 
+RUN --mount=target=/run/src/extras/sbom-stage1/proc/mounts \ 
     && apk add --no-cache ca-certificates==${CA_CERT_VERSION} \
                           gnupg==${GNUPG_VERSION} \
         # expect a warning here because the trustdb is empty in this container - we manually verify the signature later
