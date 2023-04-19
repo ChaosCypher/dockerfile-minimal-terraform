@@ -40,7 +40,7 @@ jobs:
         uses: docker/build-push-action@v4
         id: image-output
         with:
-          attests: type=sbom,type=provenance,mode=max
+          attests: type=sbom,mode=max
           tags: localhost:5000/localbuild/testimage:v1
           push: true
           builder: ${{ steps.buildx.outputs.name }}
