@@ -3,6 +3,7 @@
 FROM alpine:3.17.3 AS stage1
 
 ARG BUILDKIT_SBOM_SCAN_CONTEXT=true
+ARG BUILDKIT_SBOM_SCAN_STAGE=true
 
 ARG CA_CERT_VERSION="20220614-r4"
 ARG GNUPG_VERSION="2.2.40-r0"
@@ -31,8 +32,6 @@ RUN --mount=type=bind,target=/run/src/extras/sbom-stage1/proc/mounts \
         # create an entry for /etc/passwd file in the next stage
     && echo "nobody:x:65534:65534:Nobody:/:" > /etc_passwd \
     && find /tmp -type f -type d -exec rm -rf {} +
-    
-ARG BUILDKIT_SBOM_SCAN_STAGE=true
 
 FROM scratch as stage2
 
