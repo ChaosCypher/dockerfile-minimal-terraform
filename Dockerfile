@@ -30,8 +30,6 @@ RUN apk add --no-cache ca-certificates==${CA_CERT_VERSION} \
         # create an entry for /etc/passwd file in the next stage
     && echo "nobody:x:65534:65534:Nobody:/:" > /etc_passwd \
     && find /tmp -type f -type d -exec rm -rf {} +
-    
-ARG BUILDKIT_SBOM_SCAN_STAGE=true
 
 FROM scratch as stage2
 
@@ -44,8 +42,6 @@ COPY --from=stage1 /tmp /tmp
 COPY --from=stage1 /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
     # /etc/passwd is required to run as a non-root user in a scratch container
 COPY --from=stage1 /etc_passwd /etc/passwd
-
-ARG BUILDKIT_SBOM_SCAN_STAGE=true
 
 FROM stage2 as final
 
