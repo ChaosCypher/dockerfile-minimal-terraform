@@ -35,7 +35,6 @@ jobs:
           driver-opts: |
             image=moby/buildkit:v0.11.5@sha256:bad778bd243302aafb13a84b562c0c6f157c7e088fa45edce5bf5741f7c4776e
             network=host
-          install: true
 
       - name: build image
         uses: docker/build-push-action@v4
@@ -46,6 +45,8 @@ jobs:
           tags: localhost:5000/localbuild/testimage:v1
           push: true
           builder: ${{ steps.buildx.outputs.name }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
 
       - name: pull image
         run: docker pull localhost:5000/localbuild/testimage:v1
