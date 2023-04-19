@@ -40,12 +40,10 @@ jobs:
         uses: docker/build-push-action@v4
         id: image-output
         with:
-          sbom: true
+          attests: type=sbom,type=provenance,mode=max
           tags: localhost:5000/localbuild/testimage:v1
           push: true
           builder: ${{ steps.buildx.outputs.name }}
-          cache-from: type=gha,scope=provenance
-          cache-to: type=gha,scope=provenance,mode=max
 
       - name: pull image
         run: docker pull localhost:5000/localbuild/testimage:v1
