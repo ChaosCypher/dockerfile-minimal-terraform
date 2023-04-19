@@ -27,6 +27,12 @@ jobs:
         ports:
           - 5000:5000
     steps:
+      - name: create sbom directories
+        run: |
+          mkdir -p /run/src/extras/sbom-stage1/proc/mounts
+          mkdir -p /run/src/extras/sbom-stage2/proc/mounts
+          mkdir -p /run/src/extras/sbom-final/proc/mounts
+
       - name: set up docker buildx
         id: buildx
         uses: docker/setup-buildx-action@v2
