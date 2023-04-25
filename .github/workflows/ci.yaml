@@ -1,5 +1,4 @@
 ---
-name: ci
 on:
   pull_request:
     branches:
@@ -33,7 +32,7 @@ jobs:
 #          DEFAULT_BRANCH: main
 #          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-  build-container:
+  ci:
     runs-on: ubuntu-22.04
     steps:
       - name: set up docker buildx
@@ -46,33 +45,23 @@ jobs:
             network=host
 
       - name: build image
-        uses: docker/bake-action@v3
+        uses: docker/build-push-action@v4
         with:
-          builder: ${{ steps.buildx.outputs.name }}
           provenance: true
           sbom: true
-          load: true
+          tags: chaoscypher/minimal-terraform:${{ github.sha }}
           push: false
-          set: |
-            dest=/tmp/${{ github.sha }}.tar
-            *.tags=chaoscypher/minimal-terraform:${{ github.sha }}
-
-      - name: store artifact
-        uses: actions/upload-artifact@v3
+          load: true
+          builder: ${{ steps.buildx.outputs.name }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          
+      - name: cve scan
+        uses: aquasecurity/trivy-action@master
         with:
-          name: container-artifact
-          path: /tmp/${{ github.sha }}.tar
-
-  security-scan:
-    needs: ["build-container"]
-    runs-on: ubuntu-22.04
-    steps:
-        - name: cve scan
-          uses: aquasecurity/trivy-action@master
-          with:
-            image-ref: chaoscypher/minimal-terraform:${{ github.sha }}
-            format: 'table'
-            exit-code: '1'
-            ignore-unfixed: true
-            vuln-type: 'os,library'
-            severity: 'CRITICAL,HIGH'
+          image-ref: chaoscypher/minimal-terraform:${{ github.sha }}
+          format: 'table'
+          exit-code: '1'
+          ignore-unfixed: true
+          vuln-type: 'os,library'
+          severity: 'CRITICAL,HIGH'
