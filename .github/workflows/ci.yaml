@@ -64,6 +64,12 @@ jobs:
           outputs: dest=/tmp/${{ github.sha }}.tar
           cache-from: type=gha
           cache-to: type=gha,mode=max
+          
+      - name: store artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: container-artifact
+          path: /tmp/${{ github.sha }}.tar
 
   security-scan:
     needs: ["build-container"]
