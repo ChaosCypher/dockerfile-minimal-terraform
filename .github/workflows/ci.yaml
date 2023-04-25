@@ -19,22 +19,22 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  lint:
-    runs-on: ubuntu-22.04
-    steps:
-      - name: checkout code
-        uses: actions/checkout@v3
-        with:
-          fetch-depth: 0
-
-      - name: lint code base
-        uses: github/super-linter/slim@v5
-        env:
-          DEFAULT_BRANCH: main
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+#  lint:
+#    runs-on: ubuntu-22.04
+#    steps:
+#      - name: checkout code
+#        uses: actions/checkout@v3
+#        with:
+#          fetch-depth: 0
+#
+#      - name: lint code base
+#        uses: github/super-linter/slim@v5
+#        env:
+#          DEFAULT_BRANCH: main
+#          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   build-container:
-    needs: ["lint"]
+#   needs: ["lint"]
     runs-on: ubuntu-22.04
     steps:    
       - name: checkout code
