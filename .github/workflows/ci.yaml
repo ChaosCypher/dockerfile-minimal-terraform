@@ -42,8 +42,17 @@ jobs:
         with:
           fetch-depth: 0
           
-      - name: update ubuntu
-        run: sudo apt-get update -y && sudo apt-get upgrade -y
+      - name: remove old docker versions
+        run: sudo apt-get remove docker docker-engine docker.io containerd runc
+        
+      - name: install docker
+        run: |
+          echo \
+          "deb [arch="$(dpkg --print-architecture)" signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu \
+          "$(. /etc/os-release && echo "$VERSION_CODENAME")" stable" | \
+          sudo tee /etc/apt/sources.list.d/docker.list > /dev/null \
+          && sudo apt-get update -y \
+          && sudo apt-get install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
 
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v2
