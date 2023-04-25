@@ -64,8 +64,6 @@ jobs:
           load: false
           builder: ${{ steps.buildx.outputs.name }}
           outputs: dest=/tmp/${{ github.sha }}.tar
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
           
       - name: store artifact
         uses: actions/upload-artifact@v3
