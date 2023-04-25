@@ -55,7 +55,7 @@ jobs:
           push: false
           load: true
           builder: ${{ steps.buildx.outputs.name }}
-          outputs: type=docker,dest=/tmp/${{ github.sha }}.tar
+          outputs: type=oci,dest=/tmp/${{ github.sha }}.tar
 
   security-scan:
     needs: ["build-container"]
