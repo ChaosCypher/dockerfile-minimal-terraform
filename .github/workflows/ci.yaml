@@ -61,7 +61,9 @@ jobs:
           push: false
           load: false
           builder: ${{ steps.buildx.outputs.name }}
-          outputs: type=oci,dest=/tmp/${{ github.sha }}.tar
+          outputs: dest=/tmp/${{ github.sha }}.tar
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
 
   security-scan:
     needs: ["build-container"]
