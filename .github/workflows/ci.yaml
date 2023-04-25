@@ -49,11 +49,12 @@ jobs:
       - name: build image
         uses: docker/build-push-action@v4
         with:
+          context: ./Dockerfile
           provenance: true
           sbom: true
           tags: chaoscypher/minimal-terraform:${{ github.sha }}
           push: false
-          load: true
+          load: false
           builder: ${{ steps.buildx.outputs.name }}
           outputs: type=oci,dest=/tmp/${{ github.sha }}.tar
 
