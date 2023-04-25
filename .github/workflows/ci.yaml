@@ -10,9 +10,9 @@ on:
       - reopened
       - synchronize
       - ready_for_review
-    paths:
-      - Dockerfile
-      - hashicorp.asc
+    #paths:
+    #  - Dockerfile
+    #  - hashicorp.asc
       
 concurrency:
   group: ci-${{ github.head_ref || github.run_id }}-1
