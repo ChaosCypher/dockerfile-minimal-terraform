@@ -46,13 +46,17 @@ jobs:
             network=host
 
       - name: build image
-        uses: docker/build-push-action@v4
+        uses: docker/bake-action@v3
         with:
-          context: "{{defaultContext}}"
-          tags: chaoscypher/minimal-terraform:${{ github.sha }}
           builder: ${{ steps.buildx.outputs.name }}
-          outputs: dest=/tmp/${{ github.sha }}.tar
-          
+          provenance: true
+          sbom: true
+          load: true
+          push: false
+          set: |
+            dest=/tmp/${{ github.sha }}.tar
+            *.tags=chaoscypher/minimal-terraform:${{ github.sha }}
+
       - name: store artifact
         uses: actions/upload-artifact@v3
         with:
