@@ -35,11 +35,6 @@ jobs:
 
   build-container:
     runs-on: ubuntu-22.04
-    services:
-      registry:
-        image: registry:2.8.1@sha256:7c8b70990dad7e4325bf26142f59f77c969c51e079918f4631767ac8d49e22fb
-        ports:
-          - 5000:5000
     steps:
       - name: set up docker buildx
         id: buildx
@@ -54,11 +49,7 @@ jobs:
         uses: docker/build-push-action@v4
         with:
           context: "{{defaultContext}}"
-          provenance: false
-          sbom: true
           tags: chaoscypher/minimal-terraform:${{ github.sha }}
-          push: false
-          load: false
           builder: ${{ steps.buildx.outputs.name }}
           outputs: dest=/tmp/${{ github.sha }}.tar
           
