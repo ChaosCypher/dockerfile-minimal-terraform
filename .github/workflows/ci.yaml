@@ -51,7 +51,6 @@ jobs:
           sbom: true
           tags: chaoscypher/minimal-terraform:${{ github.sha }}
           push: false
-          load: false
           builder: ${{ steps.buildx.outputs.name }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
