@@ -54,7 +54,7 @@ jobs:
       - name: build image
         uses: docker/build-push-action@v4
         with:
-          context: ./Dockerfile
+          context: "{{defaultContext}}"
           provenance: true
           sbom: true
           tags: chaoscypher/minimal-terraform:${{ github.sha }}
