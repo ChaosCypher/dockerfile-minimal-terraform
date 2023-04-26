@@ -69,38 +69,23 @@ jobs:
         run: docker pull localhost:5000/chaoscypher/minimal-terraform:${{ github.event.pull_request.number }}
 
       - name: export image
-        run: docker save -o /tmp/images.tar localhost:5000/chaoscypher/minimal-terraform:${{ github.event.pull_request.number }}
+        run: docker save localhost:5000/chaoscypher/minimal-terraform:${{ github.event.pull_request.number }} | gzip > /tmp/images.tar.gz
 
       - name: store artifact
         uses: actions/upload-artifact@v3
         with:
           name: container-artifact
-          path: /tmp/images.tar
+          path: /tmp/images.tar.gz
           
   scan-container:
     needs: [build-image]
     runs-on: ubuntu-22.04
     steps:
-      - name: get artifact
-        uses: actions/github-script@v6
+      - name: download artifact
+        uses: actions/download-artifact@v3
         with:
-          script: |
-            let allArtifacts = await github.rest.actions.listWorkflowRunArtifacts({
-               owner: context.repo.owner,
-               repo: context.repo.repo,
-               run_id: github.run_id,
-            });
-            let matchArtifact = allArtifacts.data.artifacts.filter((artifact) => {
-              return artifact.name == "container-artifact"
-            })[0];
-            let download = await github.rest.actions.downloadArtifact({
-               owner: context.repo.owner,
-               repo: context.repo.repo,
-               artifact_id: matchArtifact.id,
-               archive_format: 'tar',
-            });
-            let fs = require('fs');
-            fs.writeFileSync(`${process.env.GITHUB_WORKSPACE}/container-artifact.tar`, Buffer.from(download.data));
+          name: container-artifact
+          path: ./images.tar
 
       - name: cve scan
         uses: aquasecurity/trivy-action@master
