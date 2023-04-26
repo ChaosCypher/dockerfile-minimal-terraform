@@ -69,7 +69,11 @@ jobs:
         run: docker pull localhost:5000/chaoscypher/minimal-terraform:${{ github.event.pull_request.number }}
 
       - name: export image
-        run: docker save localhost:5000/chaoscypher/minimal-terraform:${{ github.event.pull_request.number }} | gzip > /tmp/images.tar.gz
+        run: docker save localhost:5000/localbuild/testimage:v1 | gzip > /tmp/images.tar.gz
+
+        # https://github.com/actions/upload-artifact#maintaining-file-permissions-and-case-sensitive-files
+      - name: tar image
+        run: tar -cvf /tmp/images.tar.gz /tmp/images.tar.gz
 
       - name: store artifact
         uses: actions/upload-artifact@v3
