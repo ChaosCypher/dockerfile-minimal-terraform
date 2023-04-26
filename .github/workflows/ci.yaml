@@ -84,10 +84,10 @@ jobs:
     runs-on: ubuntu-22.04
     steps:
       - name: download artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/download-artifact@v3
         with:
           name: container-artifact
-          path: /tmp/images.tar
+          path: ./images.tar
 
       - name: load image
         run: docker load --input ./images.tar
