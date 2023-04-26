@@ -69,17 +69,13 @@ jobs:
         run: docker pull localhost:5000/chaoscypher/minimal-terraform:${{ github.event.pull_request.number }}
 
       - name: export image
-        run: docker save localhost:5000/localbuild/testimage:v1 | gzip > /tmp/images.tar.gz
-
-        # https://github.com/actions/upload-artifact#maintaining-file-permissions-and-case-sensitive-files
-      - name: zip image
-        run: zip /tmp/images.zip /tmp/images.tar.gz
+        run: docker save -o /tmp/images.tar localhost:5000/chaoscypher/minimal-terraform:${{ github.event.pull_request.number }}
 
       - name: store artifact
         uses: actions/upload-artifact@v3
         with:
           name: container-artifact
-          path: /tmp/images.zip
+          path: /tmp/images.tar
           
   scan-container:
     needs: [build-image]
@@ -89,12 +85,15 @@ jobs:
         uses: actions/download-artifact@v3
         with:
           name: container-artifact
-          path: ./images.tar.gz
+          path: ./images.tar
+          
+      - name: load image
+        run: docker load --input ./images.tar
 
       - name: cve scan
         uses: aquasecurity/trivy-action@master
         with:
-          input: /github/workspace/images.tar.gz
+          image-ref: localhost:5000/chaoscypher/minimal-terraform:${{ github.event.pull_request.number }}
           format: 'table'
           exit-code: '1'
           ignore-unfixed: true
