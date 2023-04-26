@@ -1,6 +1,6 @@
 # syntax=docker/dockerfile:1.5
 
-FROM alpine:3.17.3 AS stage1
+FROM alpine:3.17.3@sha256:b6ca290b6b4cdcca5b3db3ffa338ee0285c11744b4a6abaa9627746ee3291d8d AS stage1
 
 ARG BUILDKIT_SBOM_SCAN_CONTEXT=true
 
