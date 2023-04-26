@@ -90,7 +90,7 @@ jobs:
             const runs = await github.rest.actions.listWorkflowRuns({
               owner: context.repo.owner,
               repo: context.repo.repo,
-              branch: github.event.pull_request_head.ref
+              branch: github.event.pull_request.head.ref,
             });
             
             const run = runs.data.workflow_runs.find(run => run.head_sha === github.event.pull_request.head.sha);
