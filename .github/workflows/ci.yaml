@@ -31,6 +31,8 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   build-image:
+    outputs:
+      workflow-id: ${{ github.run_id }}
     needs: [lint]
     runs-on: ubuntu-22.04
     services:
@@ -88,7 +90,7 @@ jobs:
             let allArtifacts = await github.rest.actions.listWorkflowRunArtifacts({
                owner: context.repo.owner,
                repo: context.repo.repo,
-               run_id: ${{ github.event.pull_request.id }},
+               run_id: ${{ needs.build-image.outputs.workflow-id }},
             });
             let matchArtifact = allArtifacts.data.artifacts.filter((artifact) => {
               return artifact.name == "container-artifact"
