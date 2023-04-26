@@ -87,10 +87,10 @@ jobs:
         uses: actions/download-artifact@v3
         with:
           name: container-artifact
-          path: ./images.tar
+          path: ./images
           
       - name: tar image
-        run: tar -cvf ./images.tar ./images.tar
+        run: tar -cvf images.tar images
 
       - name: cve scan
         uses: aquasecurity/trivy-action@master
