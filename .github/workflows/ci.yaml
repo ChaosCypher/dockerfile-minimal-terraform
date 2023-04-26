@@ -87,20 +87,31 @@ jobs:
         uses: actions/github-script@v6
         with:
           script: |
+            const runs = await github.rest.actions.listWorkflowRuns({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              branch: github.event.pull_request_head.ref
+            });
+            
+            const run = runs.data.workflow_runs.find(run => run.head_sha === github.event.pull_request.head.sha);
+           
             let allArtifacts = await github.rest.actions.listWorkflowRunArtifacts({
                owner: context.repo.owner,
                repo: context.repo.repo,
-               run_id: ${{ needs.build-image.outputs.workflow-id }},
+               run_id: run.id,
             });
+            
             let matchArtifact = allArtifacts.data.artifacts.filter((artifact) => {
               return artifact.name == "container-artifact"
             })[0];
+            
             let download = await github.rest.actions.downloadArtifact({
                owner: context.repo.owner,
                repo: context.repo.repo,
                artifact_id: matchArtifact.id,
                archive_format: 'zip',
             });
+            
             let fs = require('fs');
             fs.writeFileSync(`${process.env.GITHUB_WORKSPACE}/container-artifact.zip`, Buffer.from(download.data));
             
