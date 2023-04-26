@@ -72,14 +72,14 @@ jobs:
         run: docker save localhost:5000/localbuild/testimage:v1 | gzip > /tmp/images.tar.gz
 
         # https://github.com/actions/upload-artifact#maintaining-file-permissions-and-case-sensitive-files
-      - name: tar image
-        run: tar -cvf /tmp/images.tar.gz /tmp/images.tar.gz
+      - name: zip image
+        run: zip /tmp/images.zip /tmp/images.tar.gz
 
       - name: store artifact
         uses: actions/upload-artifact@v3
         with:
           name: container-artifact
-          path: /tmp/images.tar.gz
+          path: /tmp/images.zip
           
   scan-container:
     needs: [build-image]
@@ -89,7 +89,7 @@ jobs:
         uses: actions/download-artifact@v3
         with:
           name: container-artifact
-          path: ./images.tar
+          path: ./images.tar.gz
 
       - name: cve scan
         uses: aquasecurity/trivy-action@master
