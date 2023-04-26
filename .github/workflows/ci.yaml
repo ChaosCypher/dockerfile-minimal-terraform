@@ -25,7 +25,7 @@ jobs:
           fetch-depth: 0
 
       - name: lint code base
-        uses: github/super-linter/slim@v5
+        uses: super-linter/super-linter/slim@v5
         env:
           DEFAULT_BRANCH: main
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -81,9 +81,6 @@ jobs:
     needs: [build-image]
     runs-on: ubuntu-22.04
     steps:
-      # the download-artifact action always extracts the packaged artifact
-      # the github-script action is used here instead to preserve it 
-      # https://github.com/actions/download-artifact/issues/143
       - name: get artifact
         uses: actions/github-script@v6
         with:
