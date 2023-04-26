@@ -93,7 +93,7 @@ jobs:
       - name: cve scan
         uses: aquasecurity/trivy-action@master
         with:
-          input: /tmp/images.tar
+          input: ./tmp/images.tar
           format: 'table'
           exit-code: '1'
           ignore-unfixed: true
