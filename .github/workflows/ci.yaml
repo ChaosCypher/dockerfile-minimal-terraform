@@ -87,18 +87,12 @@ jobs:
         uses: actions/download-artifact@v3
         with:
           name: container-artifact
-          path: ./images.tar
-      
-      - name: test
-        run: cd images.tar && ls
-
-      - name: load image
-        run: docker load --input ./images.tar
+          path: .
 
       - name: cve scan
         uses: aquasecurity/trivy-action@master
         with:
-          image-ref: chaoscypher/minimal-terraform:${{ github.event.pull_request.number }}
+          input: /github/workspace/images.tar
           format: 'table'
           exit-code: '1'
           ignore-unfixed: true
