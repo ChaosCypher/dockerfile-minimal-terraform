@@ -88,11 +88,14 @@ jobs:
         with:
           name: container-artifact
           path: ./images.tar
+          
+      - name: load image
+        run: docker load --input ./images.tar
 
       - name: cve scan
         uses: aquasecurity/trivy-action@master
         with:
-          input: ./github/workspace/images.tar
+          image-ref: chaoscypher/minimal-terraform:${{ github.event.pull_request.number }}
           format: 'table'
           exit-code: '1'
           ignore-unfixed: true
