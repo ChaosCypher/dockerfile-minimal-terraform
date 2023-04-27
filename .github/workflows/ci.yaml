@@ -72,6 +72,9 @@ jobs:
 
       - name: export image
         run: docker save -o /tmp/images.tar localhost:5000/chaoscypher/minimal-terraform:${{ github.event.pull_request.number }}
+        
+      - name: inspect sbom
+        run: docker buildx imagetools inspect localhost:5000/chaoscypher/minimal-terraform:${{ github.event.pull_request.number }} --format "{{ json .SBOM.SPDX }}"
 
       - name: upload artifact
         uses: actions/upload-artifact@v3
@@ -98,21 +101,3 @@ jobs:
           ignore-unfixed: true
           vuln-type: 'os,library'
           severity: 'CRITICAL,HIGH'
-          
-  generate-sbom:
-    needs: [build-image]
-    runs-on: ubuntu-22.04
-    steps:
-      - name: download artifact
-        uses: actions/download-artifact@v3
-        with:
-          name: container-artifact
-          path: .
-          
-      - name: load image
-        run: docker load --input ./images.tar
-
-      - name: generate sbom
-        uses: anchore/sbom-action@v0
-        with:
-          image: localhost:5000/chaoscypher/minimal-terraform:${{ github.event.pull_request.number }}
