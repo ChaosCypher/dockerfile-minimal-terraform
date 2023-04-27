@@ -87,12 +87,12 @@ jobs:
         uses: actions/download-artifact@v3
         with:
           name: container-artifact
-          path: ./images
+          path: ./images.tar
 
       - name: cve scan
         uses: aquasecurity/trivy-action@master
         with:
-          input: /github/workspace/images
+          input: ./github/workspace/images.tar
           format: 'table'
           exit-code: '1'
           ignore-unfixed: true
