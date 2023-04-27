@@ -99,7 +99,7 @@ jobs:
           
   sbom:
     needs: [build-image]
-    runs-on: ubuntu-22-04
+    runs-on: ubuntu-22.04
     steps:
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v2
