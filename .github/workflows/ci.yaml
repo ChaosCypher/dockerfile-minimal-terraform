@@ -31,8 +31,6 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   build-image:
-    outputs:
-      workflow-id: ${{ github.run_id }}
     needs: [lint]
     runs-on: ubuntu-22.04
     services:
