@@ -54,7 +54,7 @@ jobs:
             image=moby/buildkit:v0.11.5@sha256:bad778bd243302aafb13a84b562c0c6f157c7e088fa45edce5bf5741f7c4776e
             network=host
 
-      - name: Build and push
+      - name: build and push
         id: build-and-push
         uses: docker/build-push-action@v4
         with:
@@ -79,7 +79,7 @@ jobs:
           name: container-artifact
           path: /tmp/images.tar
           
-  scan-container:
+  scan-image:
     needs: [build-image]
     runs-on: ubuntu-22.04
     steps:
@@ -98,3 +98,21 @@ jobs:
           ignore-unfixed: true
           vuln-type: 'os,library'
           severity: 'CRITICAL,HIGH'
+          
+  generate-sbom:
+    needs: [build-image]
+    runs-on: ubuntu-22.04
+    steps:
+      - name: download artifact
+        uses: actions/download-artifact@v3
+        with:
+          name: container-artifact
+          path: .
+          
+      - name: load image
+        run: docker load --input ./images.tar
+
+      - name: generate sbom
+        uses: anchore/sbom-action@v0
+        with:
+          image: localhost:5000/chaoscypher/minimal-terraform:${{ github.event.pull_request.number }}
