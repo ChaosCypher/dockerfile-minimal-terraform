@@ -70,6 +70,19 @@ jobs:
     needs: [build-image]
     runs-on: ubuntu-22.04
     steps:
+      - name: checkout branch
+        uses: actions/checkout@v3
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v2
+
+      - name: set up docker buildx
+        uses: docker/setup-buildx-action@v2
+        with:
+          driver-opts: |
+            image=moby/buildkit:v0.11.5@sha256:bad778bd243302aafb13a84b562c0c6f157c7e088fa45edce5bf5741f7c4776e
+            network=host
+
       - name: download artifact
         uses: actions/download-artifact@v3
         with:
@@ -79,7 +92,7 @@ jobs:
       - name: build image
         uses: docker/build-push-action@v4
         with:
-          context: /github/workspace/container-artifact
+          context: container-artifact/
           platforms: linux/amd64
           push: false
           tags: chaoscypher/minimal-terraform:${{ github.event.pull_request.number }}
