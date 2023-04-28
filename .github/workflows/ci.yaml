@@ -118,7 +118,7 @@ jobs:
         uses: docker/build-push-action@v4
         with:
           context: .
-          platforms: linux/arm/v6,linux/arm/v7,linux/arm64,linux/386,linux/amd64,linux/riscv64,linux/ppc64le,linux/s390x
+          platforms: linux/amd64
           push: false
           tags: localhost:5000/chaoscypher/minimal-terraform:${{ github.event.pull_request.number }}
           sbom: true
@@ -126,12 +126,16 @@ jobs:
           outputs: type=local,dest=out
       
       - name: inspect manifest outputs
-        run: ls out/linux_amd64/
-
-      - name: inspect sbom
         run: |
-          cat out/linux_amd64/sbom.spdx.json
-          cat out/linux_amd64/provenance.json
-          cat out/linux_amd64/sbom-context.spdx.json
-          cat out/linux_amd64/sbom-stage1.spdx.json
-          cat out/linux_amd64/sbom-stage2.spdx.json
+          tar -czvf sbom-provenance-data.tar.gz \
+            out/linux_amd64/provenance.json
+            out/linux_amd64/sbom-context.spdx.json
+            out/linux_amd64/sbom-stage1.spdx.json
+            out/linux_amd64/sbom-stage2.spdx.json
+            out/linux_amd64/sbom.spdx.json
+
+      - name: upload artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: sbom-provenance-data
+          path: ./sbom-provenance-data.tar.gz
