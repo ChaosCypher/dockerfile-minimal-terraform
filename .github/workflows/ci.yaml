@@ -95,7 +95,7 @@ jobs:
           severity: 'CRITICAL,HIGH'
           
   sboms-provenance:
-    needs: [build-image, lint, scan-image]
+    needs: [build-image, scan-image]
     runs-on: ubuntu-22.04
     steps:
       - name: download artifact
