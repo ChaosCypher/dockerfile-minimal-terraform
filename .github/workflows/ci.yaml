@@ -126,16 +126,16 @@ jobs:
           outputs: type=local,dest=out
           
       - name: list sbom files
-        run: ls
+        run: ls out/
       
       - name: inspect manifest outputs
         run: |
           tar -czvf sbom-provenance-data.tar.gz \
-            out/linux_amd64/provenance.json \
-            out/linux_amd64/sbom-context.spdx.json \
-            out/linux_amd64/sbom-stage1.spdx.json \
-            out/linux_amd64/sbom-stage2.spdx.json \
-            out/linux_amd64/sbom.spdx.json
+            out/provenance.json \
+            out/sbom-context.spdx.json \
+            out/sbom-stage1.spdx.json \
+            out/sbom-stage2.spdx.json \
+            out/sbom.spdx.json
 
       - name: upload artifact
         uses: actions/upload-artifact@v3
