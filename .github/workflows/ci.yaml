@@ -126,4 +126,4 @@ jobs:
           outputs: type=local,dest=out
           
       - name: inspect sbom
-        run: ls -al out/
+        run: ls -al out/linux_amd64/
