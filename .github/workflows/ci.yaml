@@ -58,7 +58,7 @@ jobs:
           cache-to: type=gha,mode=max
           sbom: true
           provenance: true
-          outputs: output=local,dest=out
+          outputs: type=local,dest=out
 
       - name: upload image artifact
         uses: actions/upload-artifact@v3
