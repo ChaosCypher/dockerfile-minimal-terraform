@@ -79,7 +79,7 @@ jobs:
       - name: build image
         uses: docker/build-push-action@v4
         with:
-          context: out/
+          context: container-artifact/
           platforms: linux/amd64
           push: false
           tags: chaoscypher/minimal-terraform:${{ github.event.pull_request.number }}
@@ -109,12 +109,12 @@ jobs:
         with:
           name: sboms
           path: |
-            !out/provenance.json
-            out/*.json
+            !container-artifact/provenance.json
+            container-artifact/*.json
             
       - name: upload provenance
         uses: actions/upload-artifact@v3
         with:
           name: provenance
-          path: out/provenance.json
+          path: container-artifact/provenance.json
     
