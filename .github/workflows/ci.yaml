@@ -124,6 +124,9 @@ jobs:
           sbom: true
           provenance: true
           outputs: type=local,dest=out
-          
+      
+      - name: inspect manifest outputs
+        run: ls out/linux_amd64/
+
       - name: inspect sbom
         run: cat out/linux_amd64/sbom.spdx.json
