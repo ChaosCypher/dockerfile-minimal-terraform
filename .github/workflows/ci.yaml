@@ -129,4 +129,9 @@ jobs:
         run: ls out/linux_amd64/
 
       - name: inspect sbom
-        run: cat out/linux_amd64/sbom.spdx.json
+        run: |
+          cat out/linux_amd64/sbom.spdx.json
+          cat out/linux_amd64/provenance.json
+          cat out/linux_amd64/sbom-context.spdx.json
+          cat out/linux_amd64/sbom-stage1.spdx.json
+          cat out/linux_amd64/sbom-stage2.spdx.json
