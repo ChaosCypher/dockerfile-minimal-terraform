@@ -33,11 +33,6 @@ jobs:
   build-image:
     needs: [lint]
     runs-on: ubuntu-22.04
-    services:
-      registry:
-        image: registry:2.8.1@sha256:7c8b70990dad7e4325bf26142f59f77c969c51e079918f4631767ac8d49e22fb
-        ports:
-          - 5000:5000
     steps:
       - name: checkout branch
         uses: actions/checkout@v3
@@ -52,30 +47,24 @@ jobs:
             image=moby/buildkit:v0.11.5@sha256:bad778bd243302aafb13a84b562c0c6f157c7e088fa45edce5bf5741f7c4776e
             network=host
 
-      - name: build and push
-        id: build-and-push
+      - name: build image
         uses: docker/build-push-action@v4
         with:
           context: .
-          platforms: linux/arm/v6,linux/arm/v7,linux/arm64,linux/386,linux/amd64,linux/riscv64,linux/ppc64le,linux/s390x
+          platforms: linux/amd64
           push: true
-          tags: localhost:5000/chaoscypher/minimal-terraform:${{ github.event.pull_request.number }}
+          tags: chaoscypher/minimal-terraform:${{ github.event.pull_request.number }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
           sbom: true
           provenance: true
+          outputs: output=local,dest=out
 
-      - name: pull image
-        run: docker pull localhost:5000/chaoscypher/minimal-terraform:${{ github.event.pull_request.number }}
-
-      - name: export image
-        run: docker save -o /tmp/images.tar localhost:5000/chaoscypher/minimal-terraform:${{ github.event.pull_request.number }}
-
-      - name: upload artifact
+      - name: upload image artifact
         uses: actions/upload-artifact@v3
         with:
           name: container-artifact
-          path: /tmp/images.tar
+          path: out/
           
   scan-image:
     needs: [build-image]
@@ -86,47 +75,46 @@ jobs:
         with:
           name: container-artifact
           path: .
+          
+      - name: build image
+        uses: docker/build-push-action@v4
+        with:
+          context: out/
+          platforms: linux/amd64
+          push: false
+          tags: chaoscypher/minimal-terraform:${{ github.event.pull_request.number }}
 
       - name: cve scan
         uses: aquasecurity/trivy-action@master
         with:
-          input: /github/workspace/images.tar
+          image-ref: chaoscypher/minimal-terraform:${{ github.event.pull_request.number }}
           format: 'table'
           exit-code: '1'
           ignore-unfixed: true
           vuln-type: 'os,library'
           severity: 'CRITICAL,HIGH'
           
-  sbom:
-    needs: [build-image]
+  sboms-provenance:
+    needs: [build-image, lint, scan-image]
     runs-on: ubuntu-22.04
     steps:
-      - name: checkout branch
-        uses: actions/checkout@v3
-
-      - name: Set up QEMU
-        uses: docker/setup-qemu-action@v2
-
-      - name: set up docker buildx
-        uses: docker/setup-buildx-action@v2
+      - name: download artifact
+        uses: actions/download-artifact@v3
         with:
-          driver-opts: |
-            image=moby/buildkit:v0.11.5@sha256:bad778bd243302aafb13a84b562c0c6f157c7e088fa45edce5bf5741f7c4776e
-            network=host
-          
-      - name: generate sbom
-        uses: docker/build-push-action@v4
-        with:
-          context: .
-          platforms: linux/amd64
-          push: false
-          tags: localhost:5000/chaoscypher/minimal-terraform:${{ github.event.pull_request.number }}
-          sbom: true
-          provenance: true
-          outputs: type=local,dest=out
+          name: container-artifact
+          path: .
 
-      - name: upload artifact
+      - name: upload SBOMS
         uses: actions/upload-artifact@v3
         with:
-          name: sbom+provenance-data
-          path: out/*.json
+          name: sboms
+          path: |
+            !out/provenance.json
+            out/*.json
+            
+      - name: upload provenance
+        uses: actions/upload-artifact@v3
+        with:
+          name: provenance
+          path: out/provenance.json
+    
