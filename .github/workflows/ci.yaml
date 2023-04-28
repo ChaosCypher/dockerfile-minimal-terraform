@@ -123,7 +123,7 @@ jobs:
           tags: localhost:5000/chaoscypher/minimal-terraform:${{ github.event.pull_request.number }}
           sbom: true
           provenance: true
-          outputs: type=local,dest=out .
+          outputs: type=local,dest=out
           
       - name: inspect sbom
-        run: ls -al
+        run: ls -al out/
