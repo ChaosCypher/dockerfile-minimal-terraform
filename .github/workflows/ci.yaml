@@ -124,21 +124,9 @@ jobs:
           sbom: true
           provenance: true
           outputs: type=local,dest=out
-          
-      - name: list sbom files
-        run: ls out/
-      
-      - name: inspect manifest outputs
-        run: |
-          tar -czvf sbom-provenance-data.tar.gz \
-            out/provenance.json \
-            out/sbom-context.spdx.json \
-            out/sbom-stage1.spdx.json \
-            out/sbom-stage2.spdx.json \
-            out/sbom.spdx.json
 
       - name: upload artifact
         uses: actions/upload-artifact@v3
         with:
-          name: sbom-provenance-data
-          path: ./sbom-provenance-data.tar.gz
+          name: sbom+provenance-data
+          path: out/*.json
