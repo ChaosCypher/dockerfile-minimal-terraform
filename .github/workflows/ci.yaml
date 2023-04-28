@@ -126,7 +126,7 @@ jobs:
           outputs: type=local,dest=out
           
       - name: list sbom files
-        run: ls out/linux_amd64
+        run: ls
       
       - name: inspect manifest outputs
         run: |
