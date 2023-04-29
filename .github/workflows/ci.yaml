@@ -33,11 +33,6 @@ jobs:
   build-image:
     needs: [lint]
     runs-on: ubuntu-22.04
-    services:
-      registry:
-        image: registry:2.8.1@sha256:7c8b70990dad7e4325bf26142f59f77c969c51e079918f4631767ac8d49e22fb
-        ports:
-          - 5000:5000
     steps:
       - name: checkout branch
         uses: actions/checkout@v3
@@ -58,24 +53,14 @@ jobs:
         with:
           context: .
           platforms: linux/amd64
-          push: true
-          tags: localhost:5000/chaoscypher/minimal-terraform:${{ github.event.pull_request.number }}
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
+          push: false
+          tags: chaoscypher/minimal-terraform:${{ github.event.pull_request.number }}
           sbom: true
           provenance: true
+          outputs: type=image, dest=.
 
-      - name: pull image
-        run: docker pull localhost:5000/chaoscypher/minimal-terraform:${{ github.event.pull_request.number }}
-
-      - name: export image
-        run: docker save -o /tmp/images.tar localhost:5000/chaoscypher/minimal-terraform:${{ github.event.pull_request.number }}
-
-      - name: upload artifact
-        uses: actions/upload-artifact@v3
-        with:
-          name: container-artifact
-          path: /tmp/images.tar
+      - name: check cwd
+        run: ls
           
   scan-image:
     needs: [build-image]
