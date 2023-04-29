@@ -42,6 +42,7 @@ jobs:
           tags: chaoscypher/minimal-terraform:${{ github.event.pull_request.number }}
           sbom: true
           provenance: true
+          load: true
             
       - name: check images
         run: docker images -a
