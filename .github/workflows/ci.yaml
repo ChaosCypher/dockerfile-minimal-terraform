@@ -41,9 +41,9 @@ jobs:
           sbom: true
           provenance: true
           outputs: |
-            type=image, \
-            chaoscypher/minimal-terraform:${{ github.event.pull_request.number }}, \
-            push=false \
+            type=image,
+            chaoscypher/minimal-terraform:${{ github.event.pull_request.number }},
+            push=false,
             store=true
             
       - name: check images
