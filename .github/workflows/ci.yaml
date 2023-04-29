@@ -40,7 +40,7 @@ jobs:
           platforms: linux/amd64
           sbom: true
           provenance: true
-          outputs: type=image,chaoscypher/minimal-terraform:${{ github.event.pull_request.number }},push=false,store=true
+          outputs: type=image,name=chaoscypher/minimal-terraform:${{ github.event.pull_request.number }},push=false,store=true
             
       - name: check images
         run: docker images
