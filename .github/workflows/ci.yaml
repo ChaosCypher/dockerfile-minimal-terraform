@@ -38,14 +38,13 @@ jobs:
         with:
           context: .
           platforms: linux/amd64
-          push: false
-          tags: chaoscypher/minimal-terraform:${{ github.event.pull_request.number }}
           sbom: true
           provenance: true
-          outputs: type=image
-
-      - name: check cwd
-        run: ls
-        
+          outputs: |
+            type=image, \
+            chaoscypher/minimal-terraform:${{ github.event.pull_request.number }}, \
+            push=false \
+            store=true
+            
       - name: check images
         run: docker images
