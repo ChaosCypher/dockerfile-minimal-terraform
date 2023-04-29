@@ -43,4 +43,4 @@ jobs:
           outputs: type=image,name=chaoscypher/minimal-terraform:${{ github.event.pull_request.number }},push=false,store=true
             
       - name: check images
-        run: docker images
+        run: docker images -a
