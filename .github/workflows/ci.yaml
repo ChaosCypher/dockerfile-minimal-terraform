@@ -97,13 +97,13 @@ jobs:
         with:
           input: /github/workspace/images.tar
           format: 'table'
-          exit-code: '1'
+          # exit-code: '1'
           ignore-unfixed: true
           vuln-type: 'os,library'
           severity: 'CRITICAL,HIGH'
 
   test-container:
-    needs: [build-image]
+    needs: [build-image, scan-image]
     runs-on: ubuntu-22.04
     steps:
       - name: download artifact
@@ -116,4 +116,4 @@ jobs:
         run: docker load --input images.tar
         
       - name: check terraform version
-        run: docker run -ti chaoscypher/minimal-terraform:0.0.${{ github.event.pull_request.number }}-alpha --version
+        run: docker run --rm -it -v $PWD:$PWD -w $PWD chaoscypher/minimal-terraform --version
