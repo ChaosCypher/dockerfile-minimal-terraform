@@ -103,7 +103,7 @@ jobs:
           severity: 'CRITICAL,HIGH'
 
   test-container:
-    needs: [build-image, scan-image]
+    needs: [build-image]
     runs-on: ubuntu-22.04
     steps:
       - name: download artifact
