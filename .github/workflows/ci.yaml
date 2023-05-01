@@ -30,7 +30,7 @@ jobs:
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v2
         with:
-          platforms: "amd64"
+          platforms: "linux/amd64/v4"
 
       - name: set up docker buildx
         id: builder
@@ -39,7 +39,7 @@ jobs:
           driver-opts: |
             image=moby/buildkit:v0.11.6@sha256:ca0d14553e35b39610d323f02ff139a472b76d7bd6b19104fbf7691ea1916217
             network=host
-          platforms: "amd64"
+          platforms: "linux/amd64/v4"
           version: v0.10.4
 
       - name: build and push
@@ -48,14 +48,13 @@ jobs:
         with:
           builder: "${{ steps.builder.outputs.name }}"
           context: .
-          platforms: "amd64"
-          load: false
+          platforms: "linux/amd64/v4"
+          load: true
           tags: chaoscypher/minimal-terraform:0.0.${{ github.event.pull_request.number }}-alpha
           sbom: true
-          outputs: type=image
           
       - name: find image
-        run: docker buildx ls
+        run: docker images -a
 
       - name: upload artifact
         uses: actions/upload-artifact@v3
