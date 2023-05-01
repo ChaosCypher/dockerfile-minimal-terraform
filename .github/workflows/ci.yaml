@@ -53,3 +53,20 @@ jobs:
         with:
           name: sbom+provenance-data
           path: out/*.json
+          
+      - name: Build and export
+        uses: docker/build-push-action@v4
+        with:
+          builder: "${{ steps.builder.outputs.name }}"
+          cache-from: type=gha
+          context: .
+          tags: chaoscypher/minimal-terraform:0.0.${{ github.event.pull_request.number }}-alpha
+          sbom: true
+          provenance: true
+          outputs: type=docker,dest=./image.tar
+          
+      - name: upload image artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: image-artifact
+          path: ./image.tar
