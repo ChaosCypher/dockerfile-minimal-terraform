@@ -59,8 +59,8 @@ jobs:
         with:
           cache-from: type=gha
           context: .
+          load: true
           tags: chaoscypher/minimal-terraform:0.0.${{ github.event.pull_request.number }}-alpha
-          outputs: type=docker,dest=./image.tar
           
       - name: upload image artifact
         uses: actions/upload-artifact@v3
