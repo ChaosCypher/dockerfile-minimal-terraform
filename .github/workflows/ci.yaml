@@ -52,7 +52,7 @@ jobs:
           load: false
           tags: chaoscypher/minimal-terraform:0.0.${{ github.event.pull_request.number }}-alpha
           sbom: true
-          outputs: type=image
+          outputs: type=image, unpack=true
           
       - name: find image
         run: docker images -a
