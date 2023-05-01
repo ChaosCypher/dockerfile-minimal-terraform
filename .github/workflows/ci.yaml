@@ -18,11 +18,6 @@ concurrency:
 jobs:
   build-image:
     runs-on: ubuntu-22.04
-    services:
-      registry:
-        image: registry:2.8.1@sha256:7c8b70990dad7e4325bf26142f59f77c969c51e079918f4631767ac8d49e22fb
-        ports:
-          - 5000:5000
     steps:
       - name: checkout branch
         uses: actions/checkout@v3
@@ -40,7 +35,7 @@ jobs:
           platforms: "linux/amd64"
           version: v0.10.4
 
-      - name: build and push
+      - name: build and cache
         id: build-and-push
         uses: docker/build-push-action@v4
         with:
@@ -49,13 +44,12 @@ jobs:
           load: false
           tags: chaoscypher/minimal-terraform:0.0.${{ github.event.pull_request.number }}-alpha
           sbom: true
-          outputs: type=oci,dest=./images.tar
+          provenance: true
+          cache-to: type=gha,mode=max
+          outputs: type=local,dest=out
           
-      - name: find image
-        run: docker images -a
-
-      - name: upload artifact
+      - name: upload sboms+provenance data
         uses: actions/upload-artifact@v3
         with:
-          name: container-artifact
-          path: ./images.tar
+          name: sbom+provenance-data
+          path: out/*.json
