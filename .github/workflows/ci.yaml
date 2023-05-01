@@ -53,6 +53,9 @@ jobs:
           tags: chaoscypher/minimal-terraform:0.0.${{ github.event.pull_request.number }}-alpha
           sbom: true
           outputs: type=image
+          
+      - name: find image
+        run: docker images -a
 
       - name: upload artifact
         uses: actions/upload-artifact@v3
