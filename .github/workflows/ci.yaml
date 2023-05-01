@@ -116,4 +116,4 @@ jobs:
         run: docker load --input images.tar
         
       - name: check terraform version
-        run: docker run --rm -it -v "$PWD:$PWD" -w "$PWD" chaoscypher/minimal-terraform --version
+        run: docker run chaoscypher/minimal-terraform --version
