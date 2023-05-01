@@ -52,10 +52,7 @@ jobs:
           load: false
           tags: chaoscypher/minimal-terraform:0.0.${{ github.event.pull_request.number }}-alpha
           sbom: true
-          outputs: type=oci
-
-      - name: export image
-        run: docker save -o /tmp/images.tar chaoscypher/minimal-terraform:0.0.${{ github.event.pull_request.number }}-alpha
+          outputs: type=oci, dest=/tmp/image.tar
 
       - name: upload artifact
         uses: actions/upload-artifact@v3
