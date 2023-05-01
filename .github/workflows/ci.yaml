@@ -16,14 +16,26 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  lint:
+    runs-on: ubuntu-22.04
+    steps:
+      - name: checkout code
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      - name: lint code base
+        uses: super-linter/super-linter/slim@v5
+        env:
+          DEFAULT_BRANCH: main
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
   build-image:
+    needs: [lint]
     runs-on: ubuntu-22.04
     steps:
       - name: checkout branch
         uses: actions/checkout@v3
-
-      - name: Set up QEMU
-        uses: docker/setup-qemu-action@v2
 
       - name: set up docker buildx
         id: builder
@@ -31,12 +43,11 @@ jobs:
         with:
           driver-opts: |
             image=moby/buildkit:v0.11.6@sha256:ca0d14553e35b39610d323f02ff139a472b76d7bd6b19104fbf7691ea1916217
-            network=host
           platforms: "linux/amd64"
           version: v0.10.4
 
+        # export the build locally until the docker exporter supports manifests
       - name: build and cache
-        id: build-and-push
         uses: docker/build-push-action@v4
         with:
           builder: "${{ steps.builder.outputs.name }}"
@@ -47,11 +58,11 @@ jobs:
           provenance: true
           cache-to: type=gha,mode=max
           outputs: type=local,dest=out
-          
-      - name: upload sboms+provenance data
+
+      - name: upload sboms
         uses: actions/upload-artifact@v3
         with:
-          name: sbom+provenance-data
+          name: sbom-data
           path: out/*.json
           
       - name: build image from cache
@@ -70,3 +81,23 @@ jobs:
         with:
           name: container-artifact
           path: /tmp/images.tar
+          
+  scan-image:
+    needs: [build-image]
+    runs-on: ubuntu-22.04
+    steps:
+      - name: download artifact
+        uses: actions/download-artifact@v3
+        with:
+          name: container-artifact
+          path: .
+
+      - name: cve scan
+        uses: aquasecurity/trivy-action@master
+        with:
+          input: /github/workspace/images.tar
+          format: 'table'
+          exit-code: '1'
+          ignore-unfixed: true
+          vuln-type: 'os,library'
+          severity: 'CRITICAL,HIGH'
