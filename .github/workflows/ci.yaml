@@ -52,7 +52,7 @@ jobs:
           load: false
           tags: chaoscypher/minimal-terraform:0.0.${{ github.event.pull_request.number }}-alpha
           sbom: true
-          outputs: type=docker,dest=./images.tar
+          outputs: type=image
 
       - name: upload artifact
         uses: actions/upload-artifact@v3
