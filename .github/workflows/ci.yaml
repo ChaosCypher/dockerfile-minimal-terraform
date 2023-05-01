@@ -54,7 +54,7 @@ jobs:
           name: sbom+provenance-data
           path: out/*.json
           
-      - name: Build and export
+      - name: build image from cache
         uses: docker/build-push-action@v4
         with:
           cache-from: type=gha
@@ -62,8 +62,11 @@ jobs:
           load: true
           tags: chaoscypher/minimal-terraform:0.0.${{ github.event.pull_request.number }}-alpha
           
-      - name: upload image artifact
+      - name: export image
+        run: docker save -o /tmp/images.tar chaoscypher/minimal-terraform:0.0.${{ github.event.pull_request.number }}-alpha
+      
+      - name: upload artifact
         uses: actions/upload-artifact@v3
         with:
-          name: image-artifact
-          path: ./image.tar
+          name: container-artifact
+          path: /tmp/images.tar
