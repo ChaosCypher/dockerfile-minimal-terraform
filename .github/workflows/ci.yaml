@@ -46,7 +46,7 @@ jobs:
         id: build-and-push
         uses: docker/build-push-action@v4
         with:
-          builder: ${{ steps.buildx-builder.outputs.name }}
+          builder: ${{ steps.buildx-builder.outputs.nodes[0].name }}
           context: .
           platforms: "amd64"
           load: true
