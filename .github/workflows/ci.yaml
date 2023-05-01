@@ -62,7 +62,7 @@ jobs:
       - name: upload sboms
         uses: actions/upload-artifact@v3
         with:
-          name: sbom-data
+          name: sbom-artifact
           path: out/*.json
           
       - name: build image from cache
