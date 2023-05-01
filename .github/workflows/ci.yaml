@@ -101,3 +101,19 @@ jobs:
           ignore-unfixed: true
           vuln-type: 'os,library'
           severity: 'CRITICAL,HIGH'
+
+  test-container:
+    needs: [build-image, scan-image]
+    runs-on: ubuntu-22.04
+    steps:
+      - name: download artifact
+        uses: actions/download-artifact@v3
+        with:
+          name: container-artifact
+          path: .
+          
+      - name: load image
+        run: docker load --input images.tar
+        
+      - name: check terraform version
+        run: docker run -ti chaoscypher/minimal-terraform:0.0.${{ github.event.pull_request.number }}-alpha --version
