@@ -49,7 +49,7 @@ jobs:
           builder: "${{ steps.builder.outputs.name }}"
           context: .
           platforms: "linux/amd64/v4"
-          load: true
+          load: false
           tags: chaoscypher/minimal-terraform:0.0.${{ github.event.pull_request.number }}-alpha
           sbom: true
           outputs: type=oci,dest=./images.tar
