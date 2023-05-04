@@ -93,7 +93,7 @@ jobs:
           path: .
 
       - name: cve scan
-        uses: aquasecurity/trivy-action@0.10.1
+        uses: aquasecurity/trivy-action@0.10.0
         with:
           input: /github/workspace/images.tar
           format: 'table'
