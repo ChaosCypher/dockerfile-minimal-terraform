@@ -115,20 +115,10 @@ jobs:
           name: sbom-artifact
           path: .
 
-      # https://github.com/aquasecurity/trivy-action/issues/173
       - name: scan ${{ matrix.sbom }}
-        uses: aquasecurity/trivy-action@0.10.0
+        uses: anchore/scan-action@v3
         with:
-          scan-type: fs
-          format: table
-          scan-ref: /github/workspace/${{ matrix.sbom }}
-          ignore-unfixed: true
-          exit-code: '1'
-          # scan-type: sbom
-          # format: json
-          # image-ref: ${{ matrix.sbom }}
-          # ignore-unfixed: true
-          # exit-code: '1'
+          sbom: ${{ matrix.sbom }}
 
   test-container:
     needs: [build-image, scan-image]
