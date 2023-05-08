@@ -120,11 +120,9 @@ jobs:
         uses: aquasecurity/trivy-action@0.10.0
         with:
           scan-type: sbom
-          format: 'table'
+          format: json
           image-ref: ${{ matrix.sbom }}
           ignore-unfixed: true
-          vuln-type: 'os,library'
-          severity: 'CRITICAL,HIGH'
           # exit-code: '1'
 
   test-container:
