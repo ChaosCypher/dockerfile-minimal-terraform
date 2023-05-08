@@ -114,12 +114,15 @@ jobs:
         with:
           name: sbom-artifact
           path: .
+          
+      - name: trim ${{ matrix.sbom }} predicate data
+        run: cat ${{ matrix.sbom }} | jq .predicate > ${{ matrix.sbom }}
 
       - name: scan ${{ matrix.sbom }}
-        uses: aquasecurity/trivy-action@0.9.2
+        uses: aquasecurity/trivy-action@0.10.0
         with:
           scan-type: sbom
-          format: spdx
+          format: spdx-json
           image-ref: ${{ matrix.sbom }}
           ignore-unfixed: true
           exit-code: '1'
