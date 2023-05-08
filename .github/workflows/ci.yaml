@@ -120,9 +120,9 @@ jobs:
         uses: aquasecurity/trivy-action@0.10.0
         with:
           scan-type: fs
-          format: json
-          image-ref: ${{ matrix.sbom }}
-          output: "${{ matrix.sbom }}-results.txt"
+          input: ${{ matrix.sbom }}
+          format: table
+          scan-ref: /github/workspace
           ignore-unfixed: true
           exit-code: '1'
           # scan-type: sbom
