@@ -114,10 +114,10 @@ jobs:
         with:
           name: sbom-artifact
           path: .
-      
+
+      # https://github.com/aquasecurity/trivy-action/issues/173
       - name: scan ${{ matrix.sbom }}
         uses: aquasecurity/trivy-action@0.10.0
-        id: scan-${{ matrix.sbom }}
         with:
           scan-type: sbom
           format: 'table'
