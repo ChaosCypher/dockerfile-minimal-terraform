@@ -104,7 +104,7 @@ jobs:
           
   scan-sboms:
     needs: [build-image]
-    runs-on: ubuntu 22.04
+    runs-on: ubuntu-22.04
     strategy:
       matrix:
         sbom: [sbom-stage1.spdx.json, sbom-stage2.spdx.json, sbom.spdx.json]
