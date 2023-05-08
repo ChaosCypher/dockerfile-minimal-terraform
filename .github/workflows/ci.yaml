@@ -114,6 +114,9 @@ jobs:
         with:
           name: sbom-artifact
           path: .
+          
+      - name: check dir
+        run: ls
 
       - name: scan ${{ matrix.sbom }}
         uses: anchore/scan-action@v3
