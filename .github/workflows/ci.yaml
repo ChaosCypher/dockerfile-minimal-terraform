@@ -122,7 +122,13 @@ jobs:
           scan-type: sbom
           format: json
           image-ref: ${{ matrix.sbom }}
+          output: "${{ matrix.sbom }}-results.txt"
           ignore-unfixed: true
+          exit-code: '1'
+          # scan-type: sbom
+          # format: json
+          # image-ref: ${{ matrix.sbom }}
+          # ignore-unfixed: true
           # exit-code: '1'
 
   test-container:
