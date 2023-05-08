@@ -114,14 +114,16 @@ jobs:
         with:
           name: sbom-artifact
           path: .
-          
-      - name: check dir
-        run: ls
 
       - name: scan ${{ matrix.sbom }}
-        uses: anchore/scan-action@v3
+        uses: aquasecurity/trivy-action@0.9.2
+        id: scan-sbom
         with:
-          sbom: ${{ matrix.sbom }}
+          scan-type: sbom
+          format: json
+          image-ref: ${{ matrix.sbom }}
+          ignore-unfixed: true
+          exit-code: '1'
 
   test-container:
     needs: [build-image, scan-image]
