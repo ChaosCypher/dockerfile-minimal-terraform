@@ -1,6 +1,6 @@
 # syntax=docker/dockerfile:1.5
 
-FROM alpine:3.17.3 AS stage1
+FROM alpine:3.18.0 AS stage1
 
 ARG BUILDKIT_SBOM_SCAN_CONTEXT=true
 
