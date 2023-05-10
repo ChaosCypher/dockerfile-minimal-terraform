@@ -114,9 +114,11 @@ jobs:
         with:
           name: sbom-artifact
           path: .
-          
+      
+      # in-toto predicate is a newer spec not widely support by sbom scanners
+      # it's removed here to achieve trivy compatability as of 05/10/23
       - name: trim ${{ matrix.sbom }} predicate data
-        run: cat ${{ matrix.sbom }} | jq .predicate > ${{ matrix.sbom }}
+        run: jq .predicate sbom.spdx.json < ${{ matrix.sbom }}
 
       - name: scan ${{ matrix.sbom }}
         uses: aquasecurity/trivy-action@0.10.0
