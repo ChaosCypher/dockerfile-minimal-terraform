@@ -1,7 +1,7 @@
-# dockerfile-minimal-terraform ![main branch](https://github.com/ChaosCypher/dockerfile-minimal-terraform/actions/workflows/docker-publish.yml/badge.svg?branch=main)
+# dockerfile-minimal-terraform ![docker publish](https://github.com/ChaosCypher/dockerfile-minimal-terraform/actions/workflows/release.yaml/badge.svg)
 This repository aims to create a secure, customizable, minimal docker container that exposes the `terraform` binary to a host machine. It begins as an alpine base(`stage 1`), where gpg and sha validations occur. Following `stage 1` the terraform binary is copied from `stage 1` into a scratch base(`stage 2`).
 
-Only **62.2MB**!!
+Only **64.87MB**!!
 
 ## using the container
 
@@ -20,7 +20,7 @@ docker build -t terraform:main .
 The defaults can be overwritten:
 
 ```shell
-docker build --build-arg TERRAFORM_VERSION=0.14.1 -t terraform:main .
+docker build --build-arg TERRAFORM_VERSION=1.4.6 -t terraform:main .
 ```
 
 ## Default Versions
