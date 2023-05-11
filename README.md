@@ -27,8 +27,8 @@ docker build --build-arg TERRAFORM_VERSION=0.14.1 -t terraform:main .
 
 |Docker Argument         |Default    |
 ------------------------ | -----------
-|ALPINE_VERSION          |3.17.1     |
-|CA_CERT_VERSION         |20220614-r4|
-|GNUPG_VERSION           |2.2.40-r0  |
+|ALPINE_VERSION          |3.18.0     |
+|CA_CERT_VERSION         |20230506-r0|
+|GNUPG_VERSION           |2.4.1-r0   |
 |PLATFORM                |linux_amd64|
-|TERRAFORM_VERSION       |1.3.9      |
+|TERRAFORM_VERSION       |1.4.6      |
