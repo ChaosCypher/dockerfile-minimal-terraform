@@ -97,7 +97,7 @@ jobs:
         with:
           input: /github/workspace/images.tar
           format: 'table'
-          # exit-code: '1'
+          exit-code: '1'
           ignore-unfixed: true
           vuln-type: 'os,library'
           severity: 'CRITICAL,HIGH'
@@ -116,7 +116,7 @@ jobs:
           path: .
       
       # in-toto predicate is a newer spec not widely support by sbom scanners
-      # it's removed here to achieve trivy compatability as of 05/10/23
+      # it's removed here to achieve compatability as of 05/10/23
       - name: trim ${{ matrix.sbom }} predicate data
         run: jq .predicate ${{ matrix.sbom }} > ${{ matrix.sbom }}.tmp
 
@@ -128,17 +128,9 @@ jobs:
           fail-build: false
           output-format: table
           sbom: ${{ matrix.sbom }}.tmp
-          
-      - name: add summary of sbom scan
-        uses: actions/github-script@v6
-        with:
-          script:
-            const summary = "${{ steps.scan-outputs.outputs }}";
-            
-            github.workflow.updateCurrentJob(${ summary });
 
   test-container:
-    needs: [build-image, scan-image]
+    needs: [build-image]
     runs-on: ubuntu-22.04
     steps:
       - name: download artifact
