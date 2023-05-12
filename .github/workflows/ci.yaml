@@ -116,7 +116,7 @@ jobs:
           path: .
           
       - name: load docker image
-        run: docker load /github/workspace/images.tar
+        run: docker load --input /github/workspace/images.tar
       
       # in-toto predicate is a newer spec not widely support by sbom scanners
       # it's removed here to achieve trivy compatability as of 05/10/23
