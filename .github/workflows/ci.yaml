@@ -120,13 +120,20 @@ jobs:
       - name: trim ${{ matrix.sbom }} predicate data
         run: jq .predicate ${{ matrix.sbom }} > ${{ matrix.sbom }}.tmp
 
-      - name: Scan ${{ matrix.sbom }}
+      - name: scan ${{ matrix.sbom }}
         uses: anchore/scan-action@v3
+        id: scan-outputs
         with:
           add-cpes-if-none: true
           fail-build: false
           output-format: table
           sbom: ${{ matrix.sbom }}.tmp
+          
+      - name: add summary of sbom scan
+        uses: actions/github-script@v6
+        with:
+          script:
+            github.workflow.updateCurrentJob(${{ steps.scan-outputs.outputs }});
 
   test-container:
     needs: [build-image, scan-image]
