@@ -123,7 +123,6 @@ jobs:
       - name: scan ${{ matrix.sbom }}
         uses: aquasecurity/trivy-action@0.10.0
         with:
-          input: /github/workspace/images.tar
           scan-type: sbom
           format: json
           image-ref: ${{ matrix.sbom }}.tmp
