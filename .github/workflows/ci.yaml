@@ -124,7 +124,7 @@ jobs:
         uses: aquasecurity/trivy-action@0.10.0
         with:
           scan-type: sbom
-          format: spdx-json
+          format: json
           image-ref: ${{ matrix.sbom }}.tmp
           ignore-unfixed: true
           exit-code: '1'
