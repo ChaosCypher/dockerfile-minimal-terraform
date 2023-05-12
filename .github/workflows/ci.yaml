@@ -118,16 +118,21 @@ jobs:
       # in-toto predicate is a newer spec not widely support by sbom scanners
       # it's removed here to achieve trivy compatability as of 05/10/23
       - name: trim ${{ matrix.sbom }} predicate data
-        run: jq .predicate ${{ matrix.sbom }}
+        run: jq .predicate ${{ matrix.sbom }} > ${{ matrix.sbom }}.tmp
 
       - name: scan ${{ matrix.sbom }}
         uses: aquasecurity/trivy-action@0.10.0
         with:
+          input: /github/workspace/images.tar
           scan-type: sbom
           format: json
           image-ref: ${{ matrix.sbom }}.tmp
+          output: ${{ matrix.sbom }}.results
           ignore-unfixed: true
           exit-code: '1'
+          
+      - name: check results
+        run: cat ${{ matrix.sbom }}.results
 
   test-container:
     needs: [build-image, scan-image]
