@@ -133,7 +133,9 @@ jobs:
         uses: actions/github-script@v6
         with:
           script:
-            github.workflow.updateCurrentJob(${{ steps.scan-outputs.outputs }});
+            const summary = "${{ steps.scan-outputs.outputs }}";
+            
+            github.workflow.updateCurrentJob(${ summary });
 
   test-container:
     needs: [build-image, scan-image]
