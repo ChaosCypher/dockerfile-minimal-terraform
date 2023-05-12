@@ -109,10 +109,16 @@ jobs:
       matrix:
         sbom: [sbom-stage1.spdx.json, sbom-stage2.spdx.json, sbom.spdx.json]
     steps:
-      - name: download artifact
+      - name: download sboms
         uses: actions/download-artifact@v3
         with:
           name: sbom-artifact
+          path: .
+          
+      - name: download image
+        uses: actions/download-artifact@v3
+        with:
+          name: container-artifact
           path: .
           
       - name: load docker image
