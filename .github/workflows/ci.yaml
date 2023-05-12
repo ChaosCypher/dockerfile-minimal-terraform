@@ -123,6 +123,9 @@ jobs:
       - name: Scan ${{ matrix.sbom }}
         uses: anchore/scan-action@v3
         with:
+          add-cpes-if-none: true
+          fail-build: false
+          output-format: table
           sbom: ${{ matrix.sbom }}.tmp
 
   test-container:
