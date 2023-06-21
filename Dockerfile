@@ -1,13 +1,14 @@
 # syntax=docker/dockerfile:1.5
 
-FROM alpine:3.18.0 AS stage1
-
 ARG BUILDKIT_SBOM_SCAN_CONTEXT=true
+ARG BUILDKIT_SBOM_SCAN_STAGE=true
+
+FROM alpine:3.18.0@sha256:c0669ef34cdc14332c0f1ab0c2c01acb91d96014b172f1a76f3a39e63d1f0bda AS stage1
 
 ARG CA_CERT_VERSION="20230506-r0"
 ARG GNUPG_VERSION="2.4.1-r1"
 ARG PLATFORM="linux_amd64"
-ARG TERRAFORM_VERSION="1.4.6"
+ARG TERRAFORM_VERSION="1.5.1"
 
 WORKDIR /
 
@@ -30,12 +31,8 @@ RUN apk add --no-cache ca-certificates==${CA_CERT_VERSION} \
         # create an entry for /etc/passwd file in the next stage
     && echo "nobody:x:65534:65534:Nobody:/:" > /etc_passwd \
     && find /tmp -type f -type d -exec rm -rf {} +
-    
-ARG BUILDKIT_SBOM_SCAN_STAGE=true
 
 FROM scratch as stage2
-
-ARG BUILDKIT_SBOM_SCAN_CONTEXT=true
 
 COPY --from=stage1 terraform /terraform
     # a /tmp directory is required by terraform
@@ -45,11 +42,7 @@ COPY --from=stage1 /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
     # /etc/passwd is required to run as a non-root user in a scratch container
 COPY --from=stage1 /etc_passwd /etc/passwd
 
-ARG BUILDKIT_SBOM_SCAN_STAGE=true
-
 FROM stage2
-
-ARG BUILDKIT_SBOM_SCAN_CONTEXT=true
 
 LABEL org.opencontainers.image.authors="jamie@chaoscypher.ca"
 LABEL org.opencontainers.image.source="https://github.com/ChaosCypher/dockerfile-minimal-terraform/blob/main/Dockerfile"
@@ -57,7 +50,5 @@ LABEL org.opencontainers.image.source="https://github.com/ChaosCypher/dockerfile
 USER nobody
 
 HEALTHCHECK CMD terraform --version
-
-ARG BUILDKIT_SBOM_SCAN_STAGE=true
 
 ENTRYPOINT [ "/terraform" ]

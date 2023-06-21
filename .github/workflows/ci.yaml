@@ -1,0 +1,146 @@
+---
+name: ci
+on:
+  pull_request:
+    branches:
+      - main
+    types:
+      - edited
+      - opened
+      - reopened
+      - synchronize
+      - ready_for_review
+
+concurrency:
+  group: ci-${{ github.head_ref || github.run_id }}-1
+  cancel-in-progress: true
+
+jobs:
+  lint:
+    runs-on: ubuntu-22.04
+    steps:
+      - name: checkout code
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      - name: lint code base
+        uses: super-linter/super-linter/slim@v5
+        env:
+          DEFAULT_BRANCH: main
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  build-image:
+    needs: [lint]
+    runs-on: ubuntu-22.04
+    steps:
+      - name: checkout branch
+        uses: actions/checkout@v3
+
+      - name: set up docker buildx
+        id: builder
+        uses: docker/setup-buildx-action@v2
+        with:
+          driver-opts: |
+            image=moby/buildkit:v0.11.6@sha256:ca0d14553e35b39610d323f02ff139a472b76d7bd6b19104fbf7691ea1916217
+          platforms: "linux/amd64"
+          version: v0.10.4
+
+        # export the build locally until the docker exporter supports manifests
+      - name: build and cache
+        uses: docker/build-push-action@v4
+        with:
+          builder: ${{ steps.builder.outputs.name }}
+          context: .
+          load: false
+          tags: chaoscypher/minimal-terraform:0.0.${{ github.event.pull_request.number }}-alpha
+          sbom: true
+          provenance: true
+          cache-to: type=gha,mode=max
+          outputs: type=local,dest=out
+
+      - name: upload sboms
+        uses: actions/upload-artifact@v3
+        with:
+          name: sbom-artifact
+          path: out/*.json
+          
+      - name: build image from cache
+        uses: docker/build-push-action@v4
+        with:
+          cache-from: type=gha
+          context: .
+          load: true
+          tags: chaoscypher/minimal-terraform:0.0.${{ github.event.pull_request.number }}-alpha
+          
+      - name: export image
+        run: docker save -o /tmp/images.tar chaoscypher/minimal-terraform:0.0.${{ github.event.pull_request.number }}-alpha
+      
+      - name: upload artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: container-artifact
+          path: /tmp/images.tar
+          
+  scan-image:
+    needs: [build-image]
+    runs-on: ubuntu-22.04
+    steps:
+      - name: download artifact
+        uses: actions/download-artifact@v3
+        with:
+          name: container-artifact
+          path: .
+
+      - name: cve scan
+        uses: aquasecurity/trivy-action@0.10.0
+        with:
+          input: /github/workspace/images.tar
+          format: 'table'
+          exit-code: '1'
+          ignore-unfixed: true
+          vuln-type: 'os,library'
+          severity: 'CRITICAL,HIGH'
+          
+  scan-sboms:
+    needs: [build-image]
+    runs-on: ubuntu-22.04
+    strategy:
+      matrix:
+        sbom: [sbom-stage1.spdx.json, sbom-stage2.spdx.json, sbom.spdx.json]
+    steps:
+      - name: download sboms
+        uses: actions/download-artifact@v3
+        with:
+          name: sbom-artifact
+          path: .
+      
+      # in-toto predicate is a newer spec not widely support by sbom scanners
+      # it's removed here to achieve compatability as of 05/10/23
+      - name: trim ${{ matrix.sbom }} predicate data
+        run: jq .predicate ${{ matrix.sbom }} > ${{ matrix.sbom }}.tmp
+
+      - name: scan ${{ matrix.sbom }}
+        uses: anchore/scan-action@v3
+        id: scan-outputs
+        with:
+          add-cpes-if-none: true
+          fail-build: false
+          output-format: table
+          sbom: ${{ matrix.sbom }}.tmp
+
+  test-container:
+    needs: [build-image]
+    runs-on: ubuntu-22.04
+    steps:
+      - name: download artifact
+        uses: actions/download-artifact@v3
+        with:
+          name: container-artifact
+          path: .
+          
+      - name: load image
+        run: docker load --input images.tar
+        
+      - name: check terraform version
+        run: docker run chaoscypher/minimal-terraform:0.0.${{ github.event.pull_request.number }}-alpha --version
