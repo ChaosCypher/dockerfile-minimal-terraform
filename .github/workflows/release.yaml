@@ -166,9 +166,9 @@ jobs:
         
       - name: tag image
         run: |
-          docker tag localhost:5000/localbuild/testimage:v1 chaoscypher/minimal-terraform:latest
-          docker tag localhost:5000/localbuild/testimage:v1 chaoscypher/minimal-terraform:${{ needs.auto-semver-release.outputs.version }}
-          docker tag localhost:5000/localbuild/testimage:v1 chaoscypher/minimal-terraform:${{ needs.auto-semver-release.outputs.major-version }}
+          docker tag chaoscypher/minimal-terraform:0.0.${{ context.payload.pull_request.number }}-alpha chaoscypher/minimal-terraform:latest
+          docker tag chaoscypher/minimal-terraform:0.0.${{ context.payload.pull_request.number }}-alpha chaoscypher/minimal-terraform:${{ needs.auto-semver-release.outputs.version }}
+          docker tag chaoscypher/minimal-terraform:0.0.${{ context.payload.pull_request.number }}-alpha chaoscypher/minimal-terraform:${{ needs.auto-semver-release.outputs.major-version }}
           
       - name: push image
         run: |
