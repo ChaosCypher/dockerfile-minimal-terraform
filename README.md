@@ -31,4 +31,4 @@ docker build --build-arg TERRAFORM_VERSION=1.4.6 -t terraform:main .
 |CA_CERT_VERSION         |20230506-r0|
 |GNUPG_VERSION           |2.4.1-r1   |
 |PLATFORM                |linux_amd64|
-|TERRAFORM_VERSION       |1.4.6      |
+|TERRAFORM_VERSION       |1.5.1      |
