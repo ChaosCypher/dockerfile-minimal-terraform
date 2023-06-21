@@ -94,6 +94,7 @@ jobs:
   get-workflow-id:
     runs-on: ubuntu-22.04
     outputs:
+      pull-request-number: ${{ steps.workflow-id.outputs.pull-request-number }}
       workflow-id: ${{ steps.workflow-id.outputs.workflow-id }}
     steps:
       - name: get workflow run id
@@ -120,8 +121,10 @@ jobs:
             });
             
             core.setOutput('workflow-id', workflowRun.id)
+            core.setOutput('pull-request-number', context.payload.pull_request.number)
 
             console.log(`Workflow ID: ${workflowRun.id}`);
+            console.log(`Triggered by PR: ${context.payload.pull_request.number}`);
 
   publish-image:
     if: github.event.pull_request.merged
@@ -166,9 +169,9 @@ jobs:
         
       - name: tag image
         run: |
-          docker tag chaoscypher/minimal-terraform:0.0.${{ context.payload.pull_request.number }}-alpha chaoscypher/minimal-terraform:latest
-          docker tag chaoscypher/minimal-terraform:0.0.${{ context.payload.pull_request.number }}-alpha chaoscypher/minimal-terraform:${{ needs.auto-semver-release.outputs.version }}
-          docker tag chaoscypher/minimal-terraform:0.0.${{ context.payload.pull_request.number }}-alpha chaoscypher/minimal-terraform:${{ needs.auto-semver-release.outputs.major-version }}
+          docker tag chaoscypher/minimal-terraform:0.0.${{ needs.get-workflow-id.outputs.pull-request-number }}-alpha chaoscypher/minimal-terraform:latest
+          docker tag chaoscypher/minimal-terraform:0.0.${{ needs.get-workflow-id.outputs.pull-request-number }}-alpha chaoscypher/minimal-terraform:${{ needs.auto-semver-release.outputs.version }}
+          docker tag chaoscypher/minimal-terraform:0.0.${{ needs.get-workflow-id.outputs.pull-request-number }}-alpha chaoscypher/minimal-terraform:${{ needs.auto-semver-release.outputs.major-version }}
           
       - name: push image
         run: |
