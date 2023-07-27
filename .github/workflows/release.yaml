@@ -22,6 +22,8 @@ jobs:
     outputs:
       version: ${{ steps.increment-version.outputs.result }}
       major-version: ${{ steps.increment-version.outputs.major-version }}
+      minor-version: ${{ steps.increment-version.outputs.minor-version }}
+      patch-version: ${{ steps.increment-version.outputs.patch-version }}
     steps:
       - name: increment version
         id: increment-version
@@ -42,7 +44,7 @@ jobs:
               latestReleaseVersion = latestRelease.data.tag_name;
             } catch (e) {
               if (e.status === 404) {
-                latestReleaseVersion = 'v0.0.0';
+                latestReleaseVersion = '0.0.0';
               } else {
                 throw e;
               }
@@ -63,7 +65,7 @@ jobs:
             let version = [];
 
             if (labels.includes('major release')) {
-              version = [`v${Number(tagNames[0].replace('v', '')) + 1}`, 0, 0];
+              version = [Number(tagNames[0]) + 1, 0, 0];
             } else if (labels.includes('minor release')) {
               version = [tagNames[0], Number(tagNames[1]) + 1, 0];
             } else {
@@ -71,6 +73,8 @@ jobs:
             }
             
             core.setOutput('major-version', version[0])
+            core.setOutput('minor-version', version[1])
+            core.setOutput('patch-version', version[2])
             
             return version.join('.');
             
@@ -94,6 +98,7 @@ jobs:
   get-workflow-id:
     runs-on: ubuntu-22.04
     outputs:
+      pull-request-number: ${{ steps.workflow-id.outputs.pull-request-number }}
       workflow-id: ${{ steps.workflow-id.outputs.workflow-id }}
     steps:
       - name: get workflow run id
@@ -120,8 +125,10 @@ jobs:
             });
             
             core.setOutput('workflow-id', workflowRun.id)
+            core.setOutput('pull-request-number', context.payload.pull_request.number)
 
             console.log(`Workflow ID: ${workflowRun.id}`);
+            console.log(`Triggered by PR: ${context.payload.pull_request.number}`);
 
   publish-image:
     if: github.event.pull_request.merged
@@ -166,9 +173,9 @@ jobs:
         
       - name: tag image
         run: |
-          docker tag localhost:5000/localbuild/testimage:v1 chaoscypher/minimal-terraform:latest
-          docker tag localhost:5000/localbuild/testimage:v1 chaoscypher/minimal-terraform:${{ needs.auto-semver-release.outputs.version }}
-          docker tag localhost:5000/localbuild/testimage:v1 chaoscypher/minimal-terraform:${{ needs.auto-semver-release.outputs.major-version }}
+          docker tag chaoscypher/minimal-terraform:0.0.${{ needs.get-workflow-id.outputs.pull-request-number }}-alpha chaoscypher/minimal-terraform:latest
+          docker tag chaoscypher/minimal-terraform:0.0.${{ needs.get-workflow-id.outputs.pull-request-number }}-alpha chaoscypher/minimal-terraform:${{ needs.auto-semver-release.outputs.version }}
+          docker tag chaoscypher/minimal-terraform:0.0.${{ needs.get-workflow-id.outputs.pull-request-number }}-alpha chaoscypher/minimal-terraform:${{ needs.auto-semver-release.outputs.major-version }}
           
       - name: push image
         run: |
