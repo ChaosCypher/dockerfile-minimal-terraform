@@ -1,12 +1,12 @@
 # dockerfile-minimal-terraform ![docker publish](https://github.com/ChaosCypher/dockerfile-minimal-terraform/actions/workflows/release.yaml/badge.svg)
 This repository aims to create a secure, customizable, minimal docker container that exposes the `terraform` binary to a host machine. It begins as an alpine base(`stage 1`), where gpg and sha validations occur. Following `stage 1` the terraform binary is copied from `stage 1` into a scratch base(`stage 2`).
 
-Only **64.87MB**!!
+Only **65.3MB**!!
 
 ## using the container
 
 ```shell
-docker run --rm -it -v $PWD:$PWD -w $PWD chaoscypher/minimal-terraform <COMMAND>
+docker run --rm -it -v $PWD:$PWD -v /tmp:/tmp -w $PWD chaoscypher/minimal-terraform <COMMAND>
 ```
 
 ## building the image
