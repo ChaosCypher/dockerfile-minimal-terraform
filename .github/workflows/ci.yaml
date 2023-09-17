@@ -48,7 +48,7 @@ jobs:
 
         # export the build locally until the docker exporter supports manifests
       - name: build and cache
-        uses: docker/build-push-action@v4
+        uses: docker/build-push-action@v5
         with:
           builder: ${{ steps.builder.outputs.name }}
           context: .
@@ -66,7 +66,7 @@ jobs:
           path: out/*.json
           
       - name: build image from cache
-        uses: docker/build-push-action@v4
+        uses: docker/build-push-action@v5
         with:
           cache-from: type=gha
           context: .
