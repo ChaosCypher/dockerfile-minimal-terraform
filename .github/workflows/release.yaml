@@ -136,7 +136,7 @@ jobs:
     needs: [auto-semver-release,get-workflow-id]
     steps:
       - name: checkout code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: log in to dockerhub
         uses: docker/login-action@v2
@@ -188,7 +188,7 @@ jobs:
     needs: [publish-image,auto-semver-release]
     steps:
       - name: checkout code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: publish sbom
         uses: anchore/sbom-action@v0
