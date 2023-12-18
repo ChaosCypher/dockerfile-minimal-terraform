@@ -52,12 +52,12 @@ jobs:
         with:
           builder: ${{ steps.builder.outputs.name }}
           context: .
-          load: true
+          load: false
           tags: chaoscypher/minimal-terraform:0.0.${{ github.event.pull_request.number }}-alpha
           sbom: true
           provenance: true
           cache-to: type=gha,mode=max
-          # outputs: type=local,dest=out
+          outputs: type=local,dest=out
 
       - name: upload sboms
         uses: actions/upload-artifact@v4
