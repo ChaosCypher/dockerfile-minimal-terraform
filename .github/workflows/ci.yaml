@@ -57,7 +57,7 @@ jobs:
           sbom: true
           provenance: true
           cache-to: type=gha,mode=max
-          outputs: type=local,dest=out
+          # outputs: type=local,dest=out
 
       - name: upload sboms
         uses: actions/upload-artifact@v4
