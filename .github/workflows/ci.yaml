@@ -60,7 +60,7 @@ jobs:
           outputs: type=local,dest=out
 
       - name: upload sboms
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: sbom-artifact
           path: out/*.json
@@ -77,7 +77,7 @@ jobs:
         run: docker save -o /tmp/images.tar chaoscypher/minimal-terraform:0.0.${{ github.event.pull_request.number }}-alpha
       
       - name: upload artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: container-artifact
           path: /tmp/images.tar
@@ -87,13 +87,13 @@ jobs:
     runs-on: ubuntu-22.04
     steps:
       - name: download artifact
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: container-artifact
           path: .
 
       - name: cve scan
-        uses: aquasecurity/trivy-action@0.15.0
+        uses: aquasecurity/trivy-action@0.16.0
         with:
           input: /github/workspace/images.tar
           format: 'table'
@@ -110,7 +110,7 @@ jobs:
         sbom: [sbom-stage1.spdx.json, sbom-stage2.spdx.json, sbom.spdx.json]
     steps:
       - name: download sboms
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: sbom-artifact
           path: .
@@ -134,7 +134,7 @@ jobs:
     runs-on: ubuntu-22.04
     steps:
       - name: download artifact
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: container-artifact
           path: .
