@@ -52,7 +52,7 @@ jobs:
         with:
           builder: ${{ steps.builder.outputs.name }}
           context: .
-          load: false
+          load: true
           tags: chaoscypher/minimal-terraform:0.0.${{ github.event.pull_request.number }}-alpha
           sbom: true
           provenance: true
