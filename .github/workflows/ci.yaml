@@ -116,7 +116,7 @@ jobs:
           path: .
 
       - name: cve scan
-        uses: aquasecurity/trivy-action@0.16.1
+        uses: aquasecurity/trivy-action@0.22.0
         with:
           input: /github/workspace/images.tar
           format: 'table'
@@ -173,7 +173,6 @@ jobs:
 
   dependabot:
     permissions:
-      actions: write
       contents: write
       pull-requests: write
     runs-on: ubuntu-latest
