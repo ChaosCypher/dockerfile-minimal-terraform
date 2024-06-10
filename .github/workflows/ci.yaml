@@ -11,136 +11,140 @@ on:
       - synchronize
       - ready_for_review
 
+env:
+  REGISTRY_IMAGE: chaoscypher/minimal-terraform
+
 concurrency:
   group: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}
   cancel-in-progress: true
 
+
 jobs:
+  list-changed-files:
+    runs-on: "ubuntu-latest"
+    outputs:
+      changedFiles: ${{ steps.list-changed-files.outputs.result }}
+    steps:
+      - uses: actions/checkout@v4.1.1
+
+      - name: List Changed Files
+        id: list-changed-files
+        uses: actions/github-script@v7.0.1
+        with:
+          script: |
+            const response = await github.request('GET /repos/{owner}/{repo}/pulls/{pull_number}/files', {
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              pull_number: context.payload.pull_request.number
+            });
+            const files = response.data.map(file => file.filename);
+            console.log(files)
+            return { changedFiles: files };
+
   lint:
     runs-on: ubuntu-22.04
     steps:
-      - name: checkout code
-        uses: actions/checkout@v4
+      - name: Checkout Repository
+        uses: actions/checkout@v4.1.6
         with:
           fetch-depth: 0
 
-      - name: lint code base
+      - name: Lint Codebase
         uses: super-linter/super-linter/slim@v5
         env:
           DEFAULT_BRANCH: main
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   build-image:
-    needs: [lint]
     runs-on: ubuntu-22.04
+    needs: [lint, list-changed-files]
+    if: >-
+      ${{
+        (
+        contains(needs.list-changed-files.outputs.changedFiles, 'Dockerfile') ||
+        contains(needs.list-changed-files.outputs.changedFiles, 'ci.yaml') ||
+        contains(needs.list-changed-files.outputs.changedFiles, 'hashicorp.asc')
+        )
+      }}
     steps:
-      - name: checkout branch
-        uses: actions/checkout@v4
+      - name: Checkout Repository
+        uses: actions/checkout@v4.1.6
 
-      - name: set up docker buildx
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+
+      - name: Set up Docker Buildx
         id: builder
         uses: docker/setup-buildx-action@v3
-        with:
-          driver-opts: |
-            image=moby/buildkit:v0.12.4@sha256:0e5755bb0a836068ffe491e2d04d44815a747910e7a14259810b22ac57189bc3
-          platforms: "linux/amd64"
-          version: v0.12.0
 
-        # export the build locally until the docker exporter supports manifests
-      - name: build and cache
-        uses: docker/build-push-action@v5
+      - name: Extract metadata
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY_IMAGE }}
+          tags: |
+            type=ref,event=pr
+            type=ref,event=branch
+            type=sha,format=long,prefix=
+
+      - name: Build and Push
+        uses: docker/build-push-action@v5.3.0
         with:
           builder: ${{ steps.builder.outputs.name }}
-          context: .
-          load: false
-          tags: chaoscypher/minimal-terraform:0.0.${{ github.event.pull_request.number }}-alpha
-          sbom: true
-          provenance: true
           cache-to: type=gha,mode=max
-          outputs: type=local,dest=out
-
-      - name: upload sboms
-        uses: actions/upload-artifact@v4
-        with:
-          name: sbom-artifact
-          path: out/*.json
-          
-      - name: build image from cache
-        uses: docker/build-push-action@v5
-        with:
-          cache-from: type=gha
           context: .
-          load: true
-          tags: chaoscypher/minimal-terraform:0.0.${{ github.event.pull_request.number }}-alpha
-          
-      - name: export image
-        run: docker save -o /tmp/images.tar chaoscypher/minimal-terraform:0.0.${{ github.event.pull_request.number }}-alpha
-      
-      - name: upload artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: container-artifact
-          path: /tmp/images.tar
+          platforms: linux/amd64, linux/arm64
+          provenance: mode=max
+          push: true
+          sbom: true
+          tags: ${{ steps.meta.outputs.tags }}
+          build-args: |
+            COMMIT_SHA=${{ github.sha }}
           
   scan-image:
     needs: [build-image]
     runs-on: ubuntu-22.04
     steps:
-      - name: download artifact
-        uses: actions/download-artifact@v4
+      - name: Run Trivy Vulnerability Scanner
+        uses: aquasecurity/trivy-action@0.20.0
         with:
-          name: container-artifact
-          path: .
-
-      - name: cve scan
-        uses: aquasecurity/trivy-action@0.16.1
-        with:
-          input: /github/workspace/images.tar
+          image-ref: ${{ env.REGISTRY_IMAGE }}:${{ github.sha }}
           format: 'table'
           exit-code: '1'
           ignore-unfixed: true
           vuln-type: 'os,library'
           severity: 'CRITICAL,HIGH'
-          
-  scan-sboms:
-    needs: [build-image]
-    runs-on: ubuntu-22.04
-    strategy:
-      matrix:
-        sbom: [sbom-stage1.spdx.json, sbom-stage2.spdx.json, sbom.spdx.json]
-    steps:
-      - name: download sboms
-        uses: actions/download-artifact@v4
-        with:
-          name: sbom-artifact
-          path: .
-      
-      # in-toto predicate is a newer spec not widely support by sbom scanners
-      # it's removed here to achieve compatability as of 05/10/23
-      - name: trim ${{ matrix.sbom }} predicate data
-        run: jq .predicate ${{ matrix.sbom }} > ${{ matrix.sbom }}.tmp
-
-      - name: scan ${{ matrix.sbom }}
-        uses: anchore/scan-action@v3
-        id: scan-outputs
-        with:
-          add-cpes-if-none: true
-          fail-build: false
-          output-format: table
-          sbom: ${{ matrix.sbom }}.tmp
 
   test-container:
     needs: [build-image]
     runs-on: ubuntu-22.04
     steps:
-      - name: download artifact
-        uses: actions/download-artifact@v4
-        with:
-          name: container-artifact
-          path: .
-          
-      - name: load image
-        run: docker load --input images.tar
-        
-      - name: check terraform version
-        run: docker run chaoscypher/minimal-terraform:0.0.${{ github.event.pull_request.number }}-alpha --version
+      - name: Check Terraform Version
+        run: docker run ${{ env.REGISTRY_IMAGE }}:${{ github.sha }} --version
+
+  dependabot:
+    permissions:
+      contents: write
+      pull-requests: write
+    runs-on: ubuntu-latest
+    needs: list-changed-files
+    if: >-
+      ${{
+        github.actor == 'dependabot[bot]' && (
+        contains(needs.list-changed-files.outputs.changedFiles, 'Dockerfile') ||
+        contains(needs.list-changed-files.outputs.changedFiles, 'ci.yaml') ||
+        contains(needs.list-changed-files.outputs.changedFiles, 'release.yaml')
+        )
+      }}
+    steps:
+      - name: Approve Dependabot Pull Request
+        run: gh pr review --approve "$PR_URL"
+        env:
+          PR_URL: ${{ github.event.pull_request.html_url }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Automerge Dependabot Pull Request
+        run: gh pr merge --auto --merge "$PR_URL"
+        env:
+          PR_URL: ${{ github.event.pull_request.html_url }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}

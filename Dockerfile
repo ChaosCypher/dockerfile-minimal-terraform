@@ -1,11 +1,8 @@
-# syntax=docker/dockerfile:1.5
-
-ARG BUILDKIT_SBOM_SCAN_CONTEXT=true
-ARG BUILDKIT_SBOM_SCAN_STAGE=true
 
 FROM alpine:3.19.1@sha256:c5b1261d6d3e43071626931fc004f70149baeba2c8ec672bd4f27761f8e1ad6b AS stage1
 
 ARG CA_CERT_VERSION="20230506-r0"
+ARG COMMIT_SHA
 ARG GNUPG_VERSION="2.4.4-r0"
 ARG PLATFORM="linux_amd64"
 ARG TERRAFORM_VERSION="1.6.6"
@@ -44,12 +41,16 @@ COPY --from=stage1 /etc_passwd /etc/passwd
 
 FROM stage2
 
-LABEL org.opencontainers.image.authors="jamie@chaoscypher.ca"
-LABEL org.opencontainers.image.description="A minimal Terraform image"
-LABEL org.opencontainers.image.source="https://github.com/ChaosCypher/dockerfile-minimal-terraform/blob/main/Dockerfile"
-
 USER nobody
 
 HEALTHCHECK CMD terraform --version
+
+LABEL com.chaoscypher.git.commit=${COMMIT_SHA} \
+      org.opencontainers.image.authors="jamie@chaoscypher.ca" \
+      org.opencontainers.image.url="https://github.com/ChaosCypher/dockerfile-minimal-terraform" \
+      org.opencontainers.image.documentation="https://github.com/ChaosCypher/dockerfile-minimal-terraform/blob/main/README.md" \
+      org.opencontainers.image.source="https://github.com/ChaosCypher/dockerfile-minimal-terraform/blob/main/Dockerfile" \
+      org.opencontainers.image.title="minimal-terraform" \
+      org.opencontainers.image.description="A secure, customizable, minimal docker container that exposes the Terraform binary to a host machine."
 
 ENTRYPOINT [ "/terraform" ]
