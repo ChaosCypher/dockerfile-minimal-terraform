@@ -16,6 +16,27 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  list-changed-files:
+    runs-on: "ubuntu-latest"
+    outputs:
+      changedFiles: ${{ steps.list-changed-files.outputs.result }}
+    steps:
+      - uses: actions/checkout@v4.1.6
+
+      - name: List Changed Files
+        id: list-changed-files
+        uses: actions/github-script@v7.0.1
+        with:
+          script: |
+            const response = await github.request('GET /repos/{owner}/{repo}/pulls/{pull_number}/files', {
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              pull_number: context.payload.pull_request.number
+            });
+            const files = response.data.map(file => file.filename);
+            console.log(files)
+            return { changedFiles: files };
+
   lint:
     runs-on: ubuntu-22.04
     steps:
@@ -31,7 +52,13 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   build-image:
-    needs: [lint]
+    needs: [lint, list-changed-files]
+    if: >-
+      ${{(
+        contains(needs.list-changed-files.outputs.changedFiles, 'Dockerfile') ||
+        contains(needs.list-changed-files.outputs.changedFiles, 'hashicorp.asc') ||
+        contains(needs.list-changed-files.outputs.changedFiles, 'ci.yaml')
+      )}}
     runs-on: ubuntu-22.04
     steps:
       - name: checkout branch
@@ -40,24 +67,20 @@ jobs:
       - name: set up docker buildx
         id: builder
         uses: docker/setup-buildx-action@v3
-        with:
-          driver-opts: |
-            image=moby/buildkit:v0.12.4@sha256:0e5755bb0a836068ffe491e2d04d44815a747910e7a14259810b22ac57189bc3
-          platforms: "linux/amd64"
-          version: v0.12.0
 
         # export the build locally until the docker exporter supports manifests
       - name: build and cache
         uses: docker/build-push-action@v5
         with:
           builder: ${{ steps.builder.outputs.name }}
+          cache-to: type=gha,mode=max
           context: .
           load: false
-          tags: chaoscypher/minimal-terraform:0.0.${{ github.event.pull_request.number }}-alpha
-          sbom: true
-          provenance: true
-          cache-to: type=gha,mode=max
           outputs: type=local,dest=out
+          platforms: linux/arm64
+          provenance: true
+          sbom: true
+          tags: chaoscypher/minimal-terraform:0.0.${{ github.event.pull_request.number }}-alpha
 
       - name: upload sboms
         uses: actions/upload-artifact@v4
@@ -138,9 +161,40 @@ jobs:
         with:
           name: container-artifact
           path: .
-          
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+
       - name: load image
         run: docker load --input images.tar
         
       - name: check terraform version
         run: docker run chaoscypher/minimal-terraform:0.0.${{ github.event.pull_request.number }}-alpha --version
+
+  dependabot:
+    permissions:
+      actions: write
+      contents: write
+      pull-requests: write
+    runs-on: ubuntu-latest
+    needs: list-changed-files
+    if: >-
+      ${{
+        github.actor == 'dependabot[bot]' && (
+        contains(needs.list-changed-files.outputs.changedFiles, 'Dockerfile') ||
+        contains(needs.list-changed-files.outputs.changedFiles, 'hashicorp.asc') ||
+        contains(needs.list-changed-files.outputs.changedFiles, 'ci.yaml')
+        )
+      }}
+    steps:
+      - name: Approve dependabot PR's that update GHA versions
+        run: gh pr review --approve "$PR_URL"
+        env:
+          PR_URL: ${{ github.event.pull_request.html_url }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Enable auto-merge for Dependabot GHA PR's
+        run: gh pr merge --auto --merge "$PR_URL"
+        env:
+          PR_URL: ${{ github.event.pull_request.html_url }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
