@@ -9,6 +9,8 @@ on:
     paths:
       - Dockerfile
       - hashicorp.asc
+      - ci.yaml
+      - release.yaml
 
 permissions:
   contents: write
