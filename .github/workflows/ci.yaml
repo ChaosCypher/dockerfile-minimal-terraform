@@ -54,13 +54,11 @@ jobs:
   build-image:
     needs: [lint, list-changed-files]
     if: >-
-      ${{
-        github.actor != 'dependabot[bot]' && (
+      ${{(
         contains(needs.list-changed-files.outputs.changedFiles, 'Dockerfile') ||
         contains(needs.list-changed-files.outputs.changedFiles, 'hashicorp.asc') ||
         contains(needs.list-changed-files.outputs.changedFiles, 'ci.yaml')
-        )
-      }}
+      )}}
     runs-on: ubuntu-22.04
     steps:
       - name: checkout branch
@@ -96,6 +94,7 @@ jobs:
           cache-from: type=gha
           context: .
           load: true
+          platforms: linux/arm64
           tags: chaoscypher/minimal-terraform:0.0.${{ github.event.pull_request.number }}-alpha
           
       - name: export image
