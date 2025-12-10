@@ -5,10 +5,12 @@ ARG BUILDKIT_SBOM_SCAN_STAGE=true
 
 FROM alpine:3.20.0@sha256:77726ef6b57ddf65bb551896826ec38bc3e53f75cdde31354fbffb4f25238ebd AS stage1
 
-ARG CA_CERT_VERSION="20240226-r0"
+ARG CA_CERT_VERSION="20250911-r0"
 ARG GNUPG_VERSION="2.4.5-r0"
-ARG PLATFORM="linux_arm64"
 ARG TERRAFORM_VERSION="1.8.5"
+ARG TARGETARCH
+ARG TARGETOS=linux
+ARG PLATFORM="${TARGETOS}_${TARGETARCH}"
 
 WORKDIR /
 
@@ -32,7 +34,7 @@ RUN apk add --no-cache ca-certificates==${CA_CERT_VERSION} \
     && echo "nobody:x:65534:65534:Nobody:/:" > /etc_passwd \
     && find /tmp -type f -type d -exec rm -rf {} +
 
-FROM scratch as stage2
+FROM scratch AS stage2
 
 COPY --from=stage1 terraform /terraform
     # a /tmp directory is required by terraform
