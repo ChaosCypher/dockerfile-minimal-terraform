@@ -129,6 +129,9 @@ jobs:
 
       - name: build and push multi-arch image
         uses: docker/build-push-action@v5
+        env:
+          VER: ${{ needs.auto-semver-release.outputs.version }}
+          MAJ: ${{ needs.auto-semver-release.outputs.major-version }}
         with:
           context: .
           platforms: linux/amd64,linux/arm64
@@ -136,12 +139,12 @@ jobs:
           cache-from: type=gha
           tags: |
             chaoscypher/minimal-terraform:latest
-            chaoscypher/minimal-terraform:${{ needs.auto-semver-release.outputs.version }}
-            chaoscypher/minimal-terraform:${{ needs.auto-semver-release.outputs.major-version }}
+            chaoscypher/minimal-terraform:${{ env.VER }}
+            chaoscypher/minimal-terraform:${{ env.MAJ }}
 
   publish-sbom:
     runs-on: ubuntu-22.04
-    needs: [publish-image,auto-semver-release]
+    needs: [publish-image, auto-semver-release]
     steps:
       - name: checkout code
         uses: actions/checkout@v4
