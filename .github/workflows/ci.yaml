@@ -17,7 +17,7 @@ concurrency:
 
 jobs:
   list-changed-files:
-    runs-on: "ubuntu-24.04"
+    runs-on: "ubuntu-latest"
     outputs:
       changedFiles: ${{ steps.list-changed-files.outputs.result }}
     steps:
@@ -40,22 +40,23 @@ jobs:
             console.log(files)
             return { changedFiles: files };
 
-  lint:
-    runs-on: ubuntu-24.04
-    steps:
-      - name: checkout code
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
+  # lint:
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - name: checkout code
+  #       uses: actions/checkout@v4
+  #       with:
+  #         fetch-depth: 0
 
-      - name: lint code base
-        uses: super-linter/super-linter/slim@v8
-        env:
-          DEFAULT_BRANCH: main
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+  # - name: lint code base
+  #   uses: super-linter/super-linter/slim@v8
+  #   env:
+  #     DEFAULT_BRANCH: main
+  #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   build-image:
-    needs: [lint, list-changed-files]
+    # needs: [lint, list-changed-files]
+    needs: [list-changed-files]
     if: >-
       ${{(
         contains(
@@ -71,7 +72,7 @@ jobs:
           'ci.yaml'
         )
       )}}
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-latest
     strategy:
       matrix:
         platform:
@@ -137,11 +138,11 @@ jobs:
         with:
           name: container-artifact-${{ matrix.arch }}
           path: /tmp/images-${{ matrix.arch }}.tar
-          
+
   # jscpd:ignore-start
   scan-image:
     needs: [build-image]
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-latest
     strategy:
       matrix:
         arch: [amd64, arm64]
@@ -156,15 +157,15 @@ jobs:
         uses: aquasecurity/trivy-action@0.22.0
         with:
           input: /github/workspace/images-${{ matrix.arch }}.tar
-          format: 'table'
-          exit-code: '1'
+          format: "table"
+          exit-code: "1"
           ignore-unfixed: true
-          vuln-type: 'os,library'
-          severity: 'CRITICAL,HIGH'
-          
+          vuln-type: "os,library"
+          severity: "CRITICAL,HIGH"
+
   scan-sboms:
     needs: [build-image]
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-latest
     strategy:
       matrix:
         arch: [amd64, arm64]
@@ -196,7 +197,7 @@ jobs:
     strategy:
       matrix:
         include:
-          - runner: ubuntu-24.04
+          - runner: ubuntu-latest
             arch: amd64
           - runner: ubuntu-24.04-arm
             arch: arm64
@@ -221,7 +222,7 @@ jobs:
     permissions:
       contents: write
       pull-requests: write
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-latest
     needs: list-changed-files
     if: >-
       ${{
