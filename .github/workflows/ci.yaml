@@ -28,11 +28,14 @@ jobs:
         uses: actions/github-script@v7.0.1
         with:
           script: |
-            const response = await github.request('GET /repos/{owner}/{repo}/pulls/{pull_number}/files', {
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              pull_number: context.payload.pull_request.number
-            });
+            const response = await github.request(
+              'GET /repos/{owner}/{repo}/pulls/{pull_number}/files',
+              {
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                pull_number: context.payload.pull_request.number
+              }
+            );
             const files = response.data.map(file => file.filename);
             console.log(files)
             return { changedFiles: files };
@@ -55,9 +58,18 @@ jobs:
     needs: [lint, list-changed-files]
     if: >-
       ${{(
-        contains(needs.list-changed-files.outputs.changedFiles, 'Dockerfile') ||
-        contains(needs.list-changed-files.outputs.changedFiles, 'hashicorp.asc') ||
-        contains(needs.list-changed-files.outputs.changedFiles, 'ci.yaml')
+        contains(
+          needs.list-changed-files.outputs.changedFiles,
+          'Dockerfile'
+        ) ||
+        contains(
+          needs.list-changed-files.outputs.changedFiles,
+          'hashicorp.asc'
+        ) ||
+        contains(
+          needs.list-changed-files.outputs.changedFiles,
+          'ci.yaml'
+        )
       )}}
     runs-on: ubuntu-22.04
     strategy:
@@ -81,7 +93,7 @@ jobs:
         id: builder
         uses: docker/setup-buildx-action@v3
 
-        # export the build locally until the docker exporter supports manifests
+        # export build locally until docker exporter supports manifests
       - name: build and cache
         uses: docker/build-push-action@v5
         with:
@@ -93,7 +105,9 @@ jobs:
           platforms: ${{ matrix.platform }}
           provenance: true
           sbom: true
-          tags: chaoscypher/minimal-terraform:0.0.${{ github.event.pull_request.number }}-alpha-${{ matrix.arch }}
+          tags: >-
+            chaoscypher/minimal-terraform:0.0.${{
+            github.event.pull_request.number }}-alpha-${{ matrix.arch }}
 
       - name: upload sboms
         uses: actions/upload-artifact@v4
@@ -108,10 +122,15 @@ jobs:
           context: .
           load: true
           platforms: ${{ matrix.platform }}
-          tags: chaoscypher/minimal-terraform:0.0.${{ github.event.pull_request.number }}-alpha-${{ matrix.arch }}
+          tags: >-
+            chaoscypher/minimal-terraform:0.0.${{
+            github.event.pull_request.number }}-alpha-${{ matrix.arch }}
 
       - name: export image
-        run: docker save -o /tmp/images-${{ matrix.arch }}.tar chaoscypher/minimal-terraform:0.0.${{ github.event.pull_request.number }}-alpha-${{ matrix.arch }}
+        run: >-
+          docker save -o /tmp/images-${{ matrix.arch }}.tar
+          chaoscypher/minimal-terraform:0.0.${{
+          github.event.pull_request.number }}-alpha-${{ matrix.arch }}
 
       - name: upload artifact
         uses: actions/upload-artifact@v4
@@ -190,7 +209,10 @@ jobs:
         run: docker load --input images-${{ matrix.arch }}.tar
 
       - name: check terraform version
-        run: docker run chaoscypher/minimal-terraform:0.0.${{ github.event.pull_request.number }}-alpha-${{ matrix.arch }} --version
+        run: >-
+          docker run chaoscypher/minimal-terraform:0.0.${{
+          github.event.pull_request.number }}-alpha-${{ matrix.arch }}
+          --version
 
   dependabot:
     permissions:
@@ -201,9 +223,18 @@ jobs:
     if: >-
       ${{
         github.actor == 'dependabot[bot]' && (
-        contains(needs.list-changed-files.outputs.changedFiles, 'Dockerfile') ||
-        contains(needs.list-changed-files.outputs.changedFiles, 'hashicorp.asc') ||
-        contains(needs.list-changed-files.outputs.changedFiles, 'ci.yaml')
+        contains(
+          needs.list-changed-files.outputs.changedFiles,
+          'Dockerfile'
+        ) ||
+        contains(
+          needs.list-changed-files.outputs.changedFiles,
+          'hashicorp.asc'
+        ) ||
+        contains(
+          needs.list-changed-files.outputs.changedFiles,
+          'ci.yaml'
+        )
         )
       }}
     steps:
