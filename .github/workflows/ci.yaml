@@ -141,11 +141,12 @@ jobs:
   scan-image:
     needs: [build-image]
     runs-on: ubuntu-22.04
-    strategy:
+    strategy: &arch-matrix-strategy
       matrix:
         arch: [amd64, arm64]
     steps:
-      - name: download artifact
+      - &download-container-artifact
+        name: download artifact
         uses: actions/download-artifact@v4
         with:
           name: container-artifact-${{ matrix.arch }}
@@ -192,15 +193,9 @@ jobs:
   test-container:
     needs: [build-image]
     runs-on: ubuntu-22.04
-    strategy:
-      matrix:
-        arch: [amd64, arm64]
+    strategy: *arch-matrix-strategy
     steps:
-      - name: download artifact
-        uses: actions/download-artifact@v4
-        with:
-          name: container-artifact-${{ matrix.arch }}
-          path: .
+      - *download-container-artifact
 
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v3
