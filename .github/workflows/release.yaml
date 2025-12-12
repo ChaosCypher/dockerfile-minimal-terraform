@@ -20,7 +20,7 @@ permissions:
 jobs:
   auto-semver-release:
     if: github.event.pull_request.merged
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     outputs:
       version: ${{ steps.increment-version.outputs.result }}
       major-version: ${{ steps.increment-version.outputs.major-version }}
@@ -41,8 +41,12 @@ jobs:
                 owner: context.repo.owner,
                 repo: context.repo.repo
               };
-              console.log("call repos.getLatestRelease:", getLatestReleaseParams);
-              const latestRelease = await github.rest.repos.getLatestRelease(getLatestReleaseParams);
+              console.log(
+                "call repos.getLatestRelease:",
+                getLatestReleaseParams
+              );
+              const latestRelease = await github.rest.repos
+                .getLatestRelease(getLatestReleaseParams);
               latestReleaseVersion = latestRelease.data.tag_name;
             } catch (e) {
               if (e.status === 404) {
@@ -52,15 +56,18 @@ jobs:
               }
             }
 
-            const listPullRequestsAssociatedWithCommitParams = {
+            const listPRsParams = {
               owner: context.repo.owner,
               repo: context.repo.repo,
               commit_sha: '${{ github.sha }}',
             };
-            console.log("call repos.listPullRequestsAssociatedWithCommit:", listPullRequestsAssociatedWithCommitParams);
+            console.log(
+              "call repos.listPullRequestsAssociatedWithCommit:",
+              listPRsParams
+            );
             const pulls = await github.paginate(
               github.rest.repos.listPullRequestsAssociatedWithCommit,
-              listPullRequestsAssociatedWithCommitParams
+              listPRsParams
             );
             const labels = pulls.flatMap(p => p.labels.map(l => l.name));
             const tagNames = latestReleaseVersion.split('.');
@@ -73,11 +80,11 @@ jobs:
             } else {
               version = [tagNames[0], tagNames[1], Number(tagNames[2]) + 1];
             }
-            
+
             core.setOutput('major-version', version[0])
             core.setOutput('minor-version', version[1])
             core.setOutput('patch-version', version[2])
-            
+
             return version.join('.');
             
       - name: create release
@@ -94,51 +101,25 @@ jobs:
               target_commitish: process.env['GITHUB_REF'],
               generate_release_notes: true
             };
-            console.log("call repos.createRelease:", createReleaseParams);
+            console.log(
+              "call repos.createRelease:",
+              createReleaseParams
+            );
             await github.rest.repos.createRelease(createReleaseParams);
             
-  get-workflow-id:
-    runs-on: ubuntu-22.04
-    outputs:
-      pull-request-number: ${{ steps.workflow-id.outputs.pull-request-number }}
-      workflow-id: ${{ steps.workflow-id.outputs.workflow-id }}
-    steps:
-      - name: get workflow run id
-        id: workflow-id
-        uses: actions/github-script@v7
-        with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          script: |
-            const pullRequest = await github.rest.pulls.get({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              pull_number: context.payload.pull_request.number
-            });
-            const commit = pullRequest.data.head.sha;
-            const workflowRuns = await github.rest.actions.listWorkflowRunsForRepo({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              branch: pullRequest.data.head.ref,
-              event: 'pull_request',
-              status: 'completed'
-            });
-            const workflowRun = workflowRuns.data.workflow_runs.find((run) => {
-              return run.head_sha === commit && run.event === 'pull_request';
-            });
-            
-            core.setOutput('workflow-id', workflowRun.id)
-            core.setOutput('pull-request-number', context.payload.pull_request.number)
-
-            console.log(`Workflow ID: ${workflowRun.id}`);
-            console.log(`Triggered by PR: ${context.payload.pull_request.number}`);
-
   publish-image:
     if: github.event.pull_request.merged
-    runs-on: ubuntu-22.04
-    needs: [auto-semver-release,get-workflow-id]
+    runs-on: ubuntu-24.04
+    needs: [auto-semver-release]
     steps:
       - name: checkout code
         uses: actions/checkout@v4
+
+      - name: set up QEMU
+        uses: docker/setup-qemu-action@v3
+
+      - name: set up docker buildx
+        uses: docker/setup-buildx-action@v3
 
       - name: log in to dockerhub
         uses: docker/login-action@v3
@@ -146,48 +127,24 @@ jobs:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-      - name: get artifact
-        uses: actions/github-script@v7
+      - name: build and push multi-arch image
+        uses: docker/build-push-action@v5
+        env:
+          VER: ${{ needs.auto-semver-release.outputs.version }}
+          MAJ: ${{ needs.auto-semver-release.outputs.major-version }}
         with:
-          script: |
-            let allArtifacts = await github.rest.actions.listWorkflowRunArtifacts({
-               owner: context.repo.owner,
-               repo: context.repo.repo,
-               run_id: ${{ needs.get-workflow-id.outputs.workflow-id }},
-            });
-            let matchArtifact = allArtifacts.data.artifacts.filter((artifact) => {
-              return artifact.name == "container-artifact"
-            })[0];
-            let download = await github.rest.actions.downloadArtifact({
-               owner: context.repo.owner,
-               repo: context.repo.repo,
-               artifact_id: matchArtifact.id,
-               archive_format: 'zip',
-            });
-            let fs = require('fs');
-            fs.writeFileSync(`${process.env.GITHUB_WORKSPACE}/container-artifact.zip`, Buffer.from(download.data));
-            
-      - name: unzip artifact
-        run: unzip container-artifact.zip
-        
-      - name: load image
-        run: docker load --input ./images.tar
-        
-      - name: tag image
-        run: |
-          docker tag chaoscypher/minimal-terraform:0.0.${{ needs.get-workflow-id.outputs.pull-request-number }}-alpha chaoscypher/minimal-terraform:latest
-          docker tag chaoscypher/minimal-terraform:0.0.${{ needs.get-workflow-id.outputs.pull-request-number }}-alpha chaoscypher/minimal-terraform:${{ needs.auto-semver-release.outputs.version }}
-          docker tag chaoscypher/minimal-terraform:0.0.${{ needs.get-workflow-id.outputs.pull-request-number }}-alpha chaoscypher/minimal-terraform:${{ needs.auto-semver-release.outputs.major-version }}
-          
-      - name: push image
-        run: |
-          docker push chaoscypher/minimal-terraform:latest
-          docker push chaoscypher/minimal-terraform:${{ needs.auto-semver-release.outputs.version }}
-          docker push chaoscypher/minimal-terraform:${{ needs.auto-semver-release.outputs.major-version }}
+          context: .
+          platforms: linux/amd64,linux/arm64
+          push: true
+          cache-from: type=gha
+          tags: |
+            chaoscypher/minimal-terraform:latest
+            chaoscypher/minimal-terraform:${{ env.VER }}
+            chaoscypher/minimal-terraform:${{ env.MAJ }}
 
   publish-sbom:
-    runs-on: ubuntu-22.04
-    needs: [publish-image,auto-semver-release]
+    runs-on: ubuntu-24.04
+    needs: [publish-image, auto-semver-release]
     steps:
       - name: checkout code
         uses: actions/checkout@v4
@@ -196,7 +153,9 @@ jobs:
         uses: anchore/sbom-action@v0
         with:
           artifact-name: sbom.spdx
-          image: chaoscypher/minimal-terraform:${{ needs.auto-semver-release.outputs.version }}
+          image: >-
+            chaoscypher/minimal-terraform:${{
+            needs.auto-semver-release.outputs.version }}
           output-file: sbom.json
           format: spdx-json
           upload-release-assets: true
