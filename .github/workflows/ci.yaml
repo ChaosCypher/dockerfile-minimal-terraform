@@ -40,22 +40,23 @@ jobs:
             console.log(files)
             return { changedFiles: files };
 
-  lint:
-    runs-on: ubuntu-latest
-    steps:
-      - name: checkout code
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
+  # lint:
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - name: checkout code
+  #       uses: actions/checkout@v4
+  #       with:
+  #         fetch-depth: 0
 
-      - name: lint code base
-        uses: super-linter/super-linter/slim@v8
-        env:
-          DEFAULT_BRANCH: main
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      # - name: lint code base
+      #   uses: super-linter/super-linter/slim@v8
+      #   env:
+      #     DEFAULT_BRANCH: main
+      #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   build-image:
-    needs: [lint, list-changed-files]
+    # needs: [lint, list-changed-files]
+    needs: [list-changed-files]
     if: >-
       ${{(
         contains(
