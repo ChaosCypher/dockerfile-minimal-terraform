@@ -137,7 +137,7 @@ jobs:
         with:
           name: container-artifact-${{ matrix.arch }}
           path: /tmp/images-${{ matrix.arch }}.tar
-          
+
   # jscpd:ignore-start
   scan-image:
     needs: [build-image]
@@ -156,12 +156,12 @@ jobs:
         uses: aquasecurity/trivy-action@0.22.0
         with:
           input: /github/workspace/images-${{ matrix.arch }}.tar
-          format: 'table'
-          exit-code: '1'
+          format: "table"
+          exit-code: "1"
           ignore-unfixed: true
-          vuln-type: 'os,library'
-          severity: 'CRITICAL,HIGH'
-          
+          vuln-type: "os,library"
+          severity: "CRITICAL,HIGH"
+
   scan-sboms:
     needs: [build-image]
     runs-on: ubuntu-24.04
