@@ -20,7 +20,7 @@ permissions:
 jobs:
   auto-semver-release:
     if: github.event.pull_request.merged
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-latest
     outputs:
       version: ${{ steps.increment-version.outputs.result }}
       major-version: ${{ steps.increment-version.outputs.major-version }}
@@ -109,7 +109,7 @@ jobs:
             
   publish-image:
     if: github.event.pull_request.merged
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-latest
     needs: [auto-semver-release]
     steps:
       - name: checkout code
@@ -143,7 +143,7 @@ jobs:
             chaoscypher/minimal-terraform:${{ env.MAJ }}
 
   publish-sbom:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-latest
     needs: [publish-image, auto-semver-release]
     steps:
       - name: checkout code
