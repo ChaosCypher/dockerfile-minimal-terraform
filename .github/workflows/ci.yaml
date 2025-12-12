@@ -192,10 +192,14 @@ jobs:
 
   test-container:
     needs: [build-image]
-    runs-on: ubuntu-22.04
+    runs-on: ${{ matrix.runner }}
     strategy:
       matrix:
-        arch: [amd64, arm64]
+        include:
+          - runner: ubuntu-24.04
+            arch: amd64
+          - runner: ubuntu-24.04-arm
+            arch: arm64
     steps:
       - name: download artifact
         uses: actions/download-artifact@v4
@@ -203,9 +207,6 @@ jobs:
           name: container-artifact-${{ matrix.arch }}
           path: .
       # jscpd:ignore-end
-
-      - name: Set up QEMU
-        uses: docker/setup-qemu-action@v3
 
       - name: load image
         run: docker load --input images-${{ matrix.arch }}.tar
@@ -215,6 +216,7 @@ jobs:
           docker run chaoscypher/minimal-terraform:0.0.${{
           github.event.pull_request.number }}-alpha-${{ matrix.arch }}
           --version
+
 
   dependabot:
     permissions:
