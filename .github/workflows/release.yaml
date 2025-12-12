@@ -41,8 +41,12 @@ jobs:
                 owner: context.repo.owner,
                 repo: context.repo.repo
               };
-              console.log("call repos.getLatestRelease:", getLatestReleaseParams);
-              const latestRelease = await github.rest.repos.getLatestRelease(getLatestReleaseParams);
+              console.log(
+                "call repos.getLatestRelease:",
+                getLatestReleaseParams
+              );
+              const latestRelease = await github.rest.repos
+                .getLatestRelease(getLatestReleaseParams);
               latestReleaseVersion = latestRelease.data.tag_name;
             } catch (e) {
               if (e.status === 404) {
@@ -52,15 +56,18 @@ jobs:
               }
             }
 
-            const listPullRequestsAssociatedWithCommitParams = {
+            const listPRsParams = {
               owner: context.repo.owner,
               repo: context.repo.repo,
               commit_sha: '${{ github.sha }}',
             };
-            console.log("call repos.listPullRequestsAssociatedWithCommit:", listPullRequestsAssociatedWithCommitParams);
+            console.log(
+              "call repos.listPullRequestsAssociatedWithCommit:",
+              listPRsParams
+            );
             const pulls = await github.paginate(
               github.rest.repos.listPullRequestsAssociatedWithCommit,
-              listPullRequestsAssociatedWithCommitParams
+              listPRsParams
             );
             const labels = pulls.flatMap(p => p.labels.map(l => l.name));
             const tagNames = latestReleaseVersion.split('.');
@@ -73,11 +80,11 @@ jobs:
             } else {
               version = [tagNames[0], tagNames[1], Number(tagNames[2]) + 1];
             }
-            
+
             core.setOutput('major-version', version[0])
             core.setOutput('minor-version', version[1])
             core.setOutput('patch-version', version[2])
-            
+
             return version.join('.');
             
       - name: create release
@@ -94,7 +101,10 @@ jobs:
               target_commitish: process.env['GITHUB_REF'],
               generate_release_notes: true
             };
-            console.log("call repos.createRelease:", createReleaseParams);
+            console.log(
+              "call repos.createRelease:",
+              createReleaseParams
+            );
             await github.rest.repos.createRelease(createReleaseParams);
             
   publish-image:
@@ -140,7 +150,9 @@ jobs:
         uses: anchore/sbom-action@v0
         with:
           artifact-name: sbom.spdx
-          image: chaoscypher/minimal-terraform:${{ needs.auto-semver-release.outputs.version }}
+          image: >-
+            chaoscypher/minimal-terraform:${{
+            needs.auto-semver-release.outputs.version }}
           output-file: sbom.json
           format: spdx-json
           upload-release-assets: true
