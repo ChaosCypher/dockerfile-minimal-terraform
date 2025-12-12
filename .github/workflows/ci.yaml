@@ -17,7 +17,7 @@ concurrency:
 
 jobs:
   list-changed-files:
-    runs-on: "ubuntu-latest"
+    runs-on: "ubuntu-24.04"
     outputs:
       changedFiles: ${{ steps.list-changed-files.outputs.result }}
     steps:
@@ -41,7 +41,7 @@ jobs:
             return { changedFiles: files };
 
   # lint:
-  #   runs-on: ubuntu-latest
+  #   runs-on: ubuntu-24.04
   #   steps:
   #     - name: checkout code
   #       uses: actions/checkout@v4
@@ -72,7 +72,7 @@ jobs:
           'ci.yaml'
         )
       )}}
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     strategy:
       matrix:
         platform:
@@ -142,7 +142,7 @@ jobs:
   # jscpd:ignore-start
   scan-image:
     needs: [build-image]
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     strategy:
       matrix:
         arch: [amd64, arm64]
@@ -165,7 +165,7 @@ jobs:
           
   scan-sboms:
     needs: [build-image]
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     strategy:
       matrix:
         arch: [amd64, arm64]
@@ -197,7 +197,7 @@ jobs:
     strategy:
       matrix:
         include:
-          - runner: ubuntu-latest
+          - runner: ubuntu-24.04
             arch: amd64
           - runner: ubuntu-24.04-arm
             arch: arm64
@@ -222,7 +222,7 @@ jobs:
     permissions:
       contents: write
       pull-requests: write
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     needs: list-changed-files
     if: >-
       ${{
