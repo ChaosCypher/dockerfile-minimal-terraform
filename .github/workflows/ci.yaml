@@ -17,7 +17,7 @@ concurrency:
 
 jobs:
   list-changed-files:
-    runs-on: "ubuntu-latest"
+    runs-on: "ubuntu-24.04"
     outputs:
       changedFiles: ${{ steps.list-changed-files.outputs.result }}
     steps:
@@ -28,17 +28,20 @@ jobs:
         uses: actions/github-script@v7.0.1
         with:
           script: |
-            const response = await github.request('GET /repos/{owner}/{repo}/pulls/{pull_number}/files', {
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              pull_number: context.payload.pull_request.number
-            });
+            const response = await github.request(
+              'GET /repos/{owner}/{repo}/pulls/{pull_number}/files',
+              {
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                pull_number: context.payload.pull_request.number
+              }
+            );
             const files = response.data.map(file => file.filename);
             console.log(files)
             return { changedFiles: files };
 
   lint:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     steps:
       - name: checkout code
         uses: actions/checkout@v4
@@ -46,7 +49,7 @@ jobs:
           fetch-depth: 0
 
       - name: lint code base
-        uses: super-linter/super-linter/slim@v5
+        uses: super-linter/super-linter/slim@v8
         env:
           DEFAULT_BRANCH: main
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -55,71 +58,104 @@ jobs:
     needs: [lint, list-changed-files]
     if: >-
       ${{(
-        contains(needs.list-changed-files.outputs.changedFiles, 'Dockerfile') ||
-        contains(needs.list-changed-files.outputs.changedFiles, 'hashicorp.asc') ||
-        contains(needs.list-changed-files.outputs.changedFiles, 'ci.yaml')
+        contains(
+          needs.list-changed-files.outputs.changedFiles,
+          'Dockerfile'
+        ) ||
+        contains(
+          needs.list-changed-files.outputs.changedFiles,
+          'hashicorp.asc'
+        ) ||
+        contains(
+          needs.list-changed-files.outputs.changedFiles,
+          'ci.yaml'
+        )
       )}}
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
+    strategy:
+      matrix:
+        platform:
+          - linux/amd64
+          - linux/arm64
+        include:
+          - platform: linux/amd64
+            arch: amd64
+          - platform: linux/arm64
+            arch: arm64
     steps:
       - name: checkout branch
         uses: actions/checkout@v4
+
+      - name: set up QEMU
+        uses: docker/setup-qemu-action@v3
 
       - name: set up docker buildx
         id: builder
         uses: docker/setup-buildx-action@v3
 
-        # export the build locally until the docker exporter supports manifests
+        # export build locally until docker exporter supports manifests
       - name: build and cache
         uses: docker/build-push-action@v5
         with:
           builder: ${{ steps.builder.outputs.name }}
-          cache-to: type=gha,mode=max
+          cache-to: type=gha,mode=max,scope=${{ matrix.arch }}
           context: .
           load: false
-          outputs: type=local,dest=out
-          platforms: linux/arm64
+          outputs: type=local,dest=out-${{ matrix.arch }}
+          platforms: ${{ matrix.platform }}
           provenance: true
           sbom: true
-          tags: chaoscypher/minimal-terraform:0.0.${{ github.event.pull_request.number }}-alpha
+          tags: >-
+            chaoscypher/minimal-terraform:0.0.${{
+            github.event.pull_request.number }}-alpha-${{ matrix.arch }}
 
       - name: upload sboms
         uses: actions/upload-artifact@v4
         with:
-          name: sbom-artifact
-          path: out/*.json
-          
+          name: sbom-artifact-${{ matrix.arch }}
+          path: out-${{ matrix.arch }}/*.json
+
       - name: build image from cache
         uses: docker/build-push-action@v5
         with:
-          cache-from: type=gha
+          cache-from: type=gha,scope=${{ matrix.arch }}
           context: .
           load: true
-          platforms: linux/arm64
-          tags: chaoscypher/minimal-terraform:0.0.${{ github.event.pull_request.number }}-alpha
-          
+          platforms: ${{ matrix.platform }}
+          tags: >-
+            chaoscypher/minimal-terraform:0.0.${{
+            github.event.pull_request.number }}-alpha-${{ matrix.arch }}
+
       - name: export image
-        run: docker save -o /tmp/images.tar chaoscypher/minimal-terraform:0.0.${{ github.event.pull_request.number }}-alpha
-      
+        run: >-
+          docker save -o /tmp/images-${{ matrix.arch }}.tar
+          chaoscypher/minimal-terraform:0.0.${{
+          github.event.pull_request.number }}-alpha-${{ matrix.arch }}
+
       - name: upload artifact
         uses: actions/upload-artifact@v4
         with:
-          name: container-artifact
-          path: /tmp/images.tar
+          name: container-artifact-${{ matrix.arch }}
+          path: /tmp/images-${{ matrix.arch }}.tar
           
+  # jscpd:ignore-start
   scan-image:
     needs: [build-image]
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
+    strategy:
+      matrix:
+        arch: [amd64, arm64]
     steps:
       - name: download artifact
         uses: actions/download-artifact@v4
         with:
-          name: container-artifact
+          name: container-artifact-${{ matrix.arch }}
           path: .
 
       - name: cve scan
         uses: aquasecurity/trivy-action@0.22.0
         with:
-          input: /github/workspace/images.tar
+          input: /github/workspace/images-${{ matrix.arch }}.tar
           format: 'table'
           exit-code: '1'
           ignore-unfixed: true
@@ -128,17 +164,18 @@ jobs:
           
   scan-sboms:
     needs: [build-image]
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     strategy:
       matrix:
+        arch: [amd64, arm64]
         sbom: [sbom-stage1.spdx.json, sbom-stage2.spdx.json, sbom.spdx.json]
     steps:
       - name: download sboms
         uses: actions/download-artifact@v4
         with:
-          name: sbom-artifact
+          name: sbom-artifact-${{ matrix.arch }}
           path: .
-      
+
       # in-toto predicate is a newer spec not widely support by sbom scanners
       # it's removed here to achieve compatability as of 05/10/23
       - name: trim ${{ matrix.sbom }} predicate data
@@ -155,35 +192,52 @@ jobs:
 
   test-container:
     needs: [build-image]
-    runs-on: ubuntu-22.04
+    runs-on: ${{ matrix.runner }}
+    strategy:
+      matrix:
+        include:
+          - runner: ubuntu-24.04
+            arch: amd64
+          - runner: ubuntu-24.04-arm
+            arch: arm64
     steps:
       - name: download artifact
         uses: actions/download-artifact@v4
         with:
-          name: container-artifact
+          name: container-artifact-${{ matrix.arch }}
           path: .
-
-      - name: Set up QEMU
-        uses: docker/setup-qemu-action@v3
+      # jscpd:ignore-end
 
       - name: load image
-        run: docker load --input images.tar
-        
+        run: docker load --input images-${{ matrix.arch }}.tar
+
       - name: check terraform version
-        run: docker run chaoscypher/minimal-terraform:0.0.${{ github.event.pull_request.number }}-alpha --version
+        run: >-
+          docker run chaoscypher/minimal-terraform:0.0.${{
+          github.event.pull_request.number }}-alpha-${{ matrix.arch }}
+          --version
 
   dependabot:
     permissions:
       contents: write
       pull-requests: write
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     needs: list-changed-files
     if: >-
       ${{
         github.actor == 'dependabot[bot]' && (
-        contains(needs.list-changed-files.outputs.changedFiles, 'Dockerfile') ||
-        contains(needs.list-changed-files.outputs.changedFiles, 'hashicorp.asc') ||
-        contains(needs.list-changed-files.outputs.changedFiles, 'ci.yaml')
+        contains(
+          needs.list-changed-files.outputs.changedFiles,
+          'Dockerfile'
+        ) ||
+        contains(
+          needs.list-changed-files.outputs.changedFiles,
+          'hashicorp.asc'
+        ) ||
+        contains(
+          needs.list-changed-files.outputs.changedFiles,
+          'ci.yaml'
+        )
         )
       }}
     steps:
