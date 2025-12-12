@@ -41,7 +41,7 @@ jobs:
             return { changedFiles: files };
 
   lint:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-latest
     steps:
       - name: checkout code
         uses: actions/checkout@v4
@@ -71,7 +71,7 @@ jobs:
           'ci.yaml'
         )
       )}}
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-latest
     strategy:
       matrix:
         platform:
@@ -141,7 +141,7 @@ jobs:
   # jscpd:ignore-start
   scan-image:
     needs: [build-image]
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-latest
     strategy:
       matrix:
         arch: [amd64, arm64]
@@ -164,7 +164,7 @@ jobs:
           
   scan-sboms:
     needs: [build-image]
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-latest
     strategy:
       matrix:
         arch: [amd64, arm64]
@@ -196,9 +196,9 @@ jobs:
     strategy:
       matrix:
         include:
-          - runner: ubuntu-24.04
+          - runner: ubuntu-latest
             arch: amd64
-          - runner: ubuntu-24.04-arm
+          - runner: arm64
             arch: arm64
     steps:
       - name: download artifact
@@ -216,7 +216,6 @@ jobs:
           docker run chaoscypher/minimal-terraform:0.0.${{
           github.event.pull_request.number }}-alpha-${{ matrix.arch }}
           --version
-
 
   dependabot:
     permissions:
