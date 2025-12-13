@@ -15,9 +15,14 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}
   cancel-in-progress: true
 
+permissions:
+  contents: read
+
 jobs:
   list-changed-files:
     runs-on: "ubuntu-24.04"
+    permissions:
+      pull-requests: read
     outputs:
       changedFiles: ${{ steps.list-changed-files.outputs.result }}
     steps:
@@ -42,6 +47,9 @@ jobs:
 
   lint:
     runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+      statuses: write
     steps:
       - name: checkout code
         uses: actions/checkout@v4
