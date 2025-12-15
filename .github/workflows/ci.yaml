@@ -191,7 +191,7 @@ jobs:
         run: jq .predicate ${{ matrix.sbom }} > ${{ matrix.sbom }}.tmp
 
       - name: scan ${{ matrix.sbom }}
-        uses: anchore/scan-action@v3
+        uses: anchore/scan-action@v4
         id: scan-outputs
         with:
           add-cpes-if-none: true
