@@ -30,7 +30,7 @@ jobs:
 
       - name: List Changed Files
         id: list-changed-files
-        uses: actions/github-script@v7.0.1
+        uses: actions/github-script@v8
         with:
           script: |
             const response = await github.request(
