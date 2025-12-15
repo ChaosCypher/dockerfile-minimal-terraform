@@ -13,12 +13,13 @@ on:
       - release.yaml
 
 permissions:
-  contents: write
-  issues: read
-  pull-requests: read
+  contents: read
 
 jobs:
   auto-semver-release:
+    permissions:
+      contents: write
+      pull-requests: read
     if: github.event.pull_request.merged
     runs-on: ubuntu-24.04
     outputs:
@@ -145,6 +146,8 @@ jobs:
   publish-sbom:
     runs-on: ubuntu-24.04
     needs: [publish-image, auto-semver-release]
+    permissions:
+      contents: write
     steps:
       - name: checkout code
         uses: actions/checkout@v4
