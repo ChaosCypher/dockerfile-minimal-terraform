@@ -13,12 +13,13 @@ on:
       - release.yaml
 
 permissions:
-  contents: write
-  issues: read
-  pull-requests: read
+  contents: read
 
 jobs:
   auto-semver-release:
+    permissions:
+      contents: write
+      pull-requests: read
     if: github.event.pull_request.merged
     runs-on: ubuntu-24.04
     outputs:
@@ -29,7 +30,7 @@ jobs:
     steps:
       - name: increment version
         id: increment-version
-        uses: actions/github-script@v7
+        uses: actions/github-script@v8
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           result-encoding: string
@@ -86,9 +87,9 @@ jobs:
             core.setOutput('patch-version', version[2])
 
             return version.join('.');
-            
+
       - name: create release
-        uses: actions/github-script@v7
+        uses: actions/github-script@v8
         env:
           GITHUB_REF: ${{env.GITHUB_REF}}
         with:
@@ -106,14 +107,14 @@ jobs:
               createReleaseParams
             );
             await github.rest.repos.createRelease(createReleaseParams);
-            
+
   publish-image:
     if: github.event.pull_request.merged
     runs-on: ubuntu-24.04
     needs: [auto-semver-release]
     steps:
       - name: checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: set up QEMU
         uses: docker/setup-qemu-action@v3
@@ -145,9 +146,11 @@ jobs:
   publish-sbom:
     runs-on: ubuntu-24.04
     needs: [publish-image, auto-semver-release]
+    permissions:
+      contents: write
     steps:
       - name: checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: publish sbom
         uses: anchore/sbom-action@v0
