@@ -81,6 +81,10 @@ jobs:
         ) ||
         contains(
           needs.list-changed-files.outputs.changedFiles,
+          'release.yaml'
+        ) ||
+        contains(
+          needs.list-changed-files.outputs.changedFiles,
           'dependabot.yml'
         )
       )}}
@@ -250,6 +254,10 @@ jobs:
         contains(
           needs.list-changed-files.outputs.changedFiles,
           'ci.yaml'
+        ) ||
+        contains(
+          needs.list-changed-files.outputs.changedFiles,
+          'release.yaml'
         )
         )
       }}
