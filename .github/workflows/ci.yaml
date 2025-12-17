@@ -78,7 +78,7 @@ jobs:
         contains(
           needs.list-changed-files.outputs.changedFiles,
           'ci.yaml'
-        )
+        ) ||
         contains(
           needs.list-changed-files.outputs.changedFiles,
           'dependabot.yml'
