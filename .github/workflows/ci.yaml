@@ -170,7 +170,7 @@ jobs:
           path: .
 
       - name: cve scan
-        uses: aquasecurity/trivy-action@0.24.0
+        uses: aquasecurity/trivy-action@0.33.1
         with:
           input: /github/workspace/images-${{ matrix.arch }}.tar
           format: "table"
