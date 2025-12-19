@@ -169,9 +169,6 @@ jobs:
           name: container-artifact-${{ matrix.arch }}
           path: .
 
-      - name: run ls
-        run: ls -al .
-
       - name: cve scan
         uses: aquasecurity/trivy-action@0.33.1
         with:
