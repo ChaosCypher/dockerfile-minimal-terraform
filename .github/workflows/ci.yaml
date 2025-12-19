@@ -175,7 +175,7 @@ jobs:
       - name: cve scan
         uses: aquasecurity/trivy-action@0.33.1
         with:
-          input: /github/workspace/container-artifact-${{ matrix.arch }}.tar
+          input: /github/workspace/images-${{ matrix.arch }}.tar
           format: "table"
           exit-code: "1"
           ignore-unfixed: true
