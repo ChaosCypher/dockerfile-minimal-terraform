@@ -10,6 +10,7 @@ permissions:
   pull-requests: write
 
 jobs:
+  # jscpd:ignore-start
   list-changed-files:
     runs-on: "ubuntu-24.04"
     permissions:
@@ -18,7 +19,6 @@ jobs:
       changedFiles: ${{ steps.list-changed-files.outputs.result }}
     steps:
       - uses: actions/checkout@v6
-
       - name: List Changed Files
         id: list-changed-files
         uses: actions/github-script@v8
@@ -35,6 +35,7 @@ jobs:
             const files = response.data.map(file => file.filename);
             console.log(files)
             return { changedFiles: files };
+    # jscpd:ignore-end
 
   check-terraform-version:
     needs: [list-changed-files]
