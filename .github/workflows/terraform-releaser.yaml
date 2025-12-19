@@ -10,7 +10,41 @@ permissions:
   pull-requests: write
 
 jobs:
+  list-changed-files:
+    runs-on: "ubuntu-24.04"
+    permissions:
+      pull-requests: read
+    outputs:
+      changedFiles: ${{ steps.list-changed-files.outputs.result }}
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: List Changed Files
+        id: list-changed-files
+        uses: actions/github-script@v8
+        with:
+          script: |
+            const response = await github.request(
+              'GET /repos/{owner}/{repo}/pulls/{pull_number}/files',
+              {
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                pull_number: context.payload.pull_request.number
+              }
+            );
+            const files = response.data.map(file => file.filename);
+            console.log(files)
+            return { changedFiles: files };
+
   check-terraform-version:
+    needs: [list-changed-files]
+    if: >-
+      ${{(
+        contains(
+          needs.list-changed-files.outputs.changedFiles,
+          'Dockerfile'
+        )
+      )}}
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
