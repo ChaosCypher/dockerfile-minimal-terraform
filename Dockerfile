@@ -16,7 +16,7 @@ WORKDIR /
 
 COPY hashicorp.asc hashicorp.asc
 
-# fail the Dockerfile build if any commands fail
+# fail the Dockerfile build if any commands
 SHELL ["/bin/ash", "-eo", "pipefail", "-c"]
 
 RUN apk add --no-cache ca-certificates==${CA_CERT_VERSION} \
