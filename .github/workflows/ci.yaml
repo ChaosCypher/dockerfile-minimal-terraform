@@ -86,8 +86,13 @@ jobs:
         contains(
           needs.list-changed-files.outputs.changedFiles,
           'dependabot.yml'
+        ) ||
+        contains(
+          needs.list-changed-files.outputs.changedFiles,
+          'terraform-releaser.yaml'
         )
       )}}
+
     runs-on: ubuntu-24.04
     strategy:
       matrix:
@@ -258,9 +263,14 @@ jobs:
         contains(
           needs.list-changed-files.outputs.changedFiles,
           'release.yaml'
+        ) ||
+        contains(
+          needs.list-changed-files.outputs.changedFiles,
+          'terraform-releaser.yaml'
         )
         )
       }}
+
     steps:
       - name: Approve dependabot PR's that update GHA versions
         run: gh pr review --approve "$PR_URL"
