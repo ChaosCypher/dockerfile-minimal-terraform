@@ -164,7 +164,7 @@ jobs:
         arch: [amd64, arm64]
     steps:
       - name: download artifact
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v7
         with:
           name: container-artifact-${{ matrix.arch }}
           path: .
@@ -188,7 +188,7 @@ jobs:
         sbom: [sbom-stage1.spdx.json, sbom-stage2.spdx.json, sbom.spdx.json]
     steps:
       - name: download sboms
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v7
         with:
           name: sbom-artifact-${{ matrix.arch }}
           path: .
@@ -219,7 +219,7 @@ jobs:
             arch: arm64
     steps:
       - name: download artifact
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v7
         with:
           name: container-artifact-${{ matrix.arch }}
           path: .
