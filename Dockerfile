@@ -1,5 +1,3 @@
-# syntax=docker/dockerfile:1.5
-
 ARG BUILDKIT_SBOM_SCAN_CONTEXT=true
 ARG BUILDKIT_SBOM_SCAN_STAGE=true
 
