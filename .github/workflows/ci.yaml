@@ -21,16 +21,17 @@ permissions:
 jobs:
   list-changed-files:
     runs-on: "ubuntu-24.04"
+    timeout-minutes: 5
     permissions:
       pull-requests: read
     outputs:
       changedFiles: ${{ steps.list-changed-files.outputs.result }}
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6
 
       - name: List Changed Files
         id: list-changed-files
-        uses: actions/github-script@v8
+        uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
         with:
           script: |
             const response = await github.request(
@@ -47,17 +48,18 @@ jobs:
 
   lint:
     runs-on: ubuntu-24.04
+    timeout-minutes: 15
     permissions:
       contents: read
       statuses: write
     steps:
       - name: checkout code
-        uses: actions/checkout@v6
+        uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6
         with:
           fetch-depth: 0
 
       - name: lint code base
-        uses: super-linter/super-linter/slim@v8
+        uses: super-linter/super-linter/slim@0794d929f16e388aa6418cc8a53dd9a7cf298b3e # v8
         env:
           DEFAULT_BRANCH: main
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -77,18 +79,19 @@ jobs:
         ) ||
         contains(
           needs.list-changed-files.outputs.changedFiles,
-          'ci.yaml'
+          '.github/workflows/ci.yaml'
         ) ||
         contains(
           needs.list-changed-files.outputs.changedFiles,
-          'release.yaml'
+          '.github/workflows/release.yaml'
         ) ||
         contains(
           needs.list-changed-files.outputs.changedFiles,
-          'dependabot.yml'
+          '.github/dependabot.yml'
         )
       )}}
     runs-on: ubuntu-24.04
+    timeout-minutes: 30
     strategy:
       matrix:
         platform:
@@ -101,18 +104,18 @@ jobs:
             arch: arm64
     steps:
       - name: checkout branch
-        uses: actions/checkout@v6
+        uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6
 
       - name: set up QEMU
-        uses: docker/setup-qemu-action@v3
+        uses: docker/setup-qemu-action@c7c53464625b32c7a7e944ae62b3e17d2b600130 # v3
 
       - name: set up docker buildx
         id: builder
-        uses: docker/setup-buildx-action@v3
+        uses: docker/setup-buildx-action@8d2750c68a42422c14e847fe6c8ac0403b4cbd6f # v3
 
         # export build locally until docker exporter supports manifests
       - name: build and cache
-        uses: docker/build-push-action@v6
+        uses: docker/build-push-action@263435318d21b8e681c14492fe198d362a7d2c83 # v6
         with:
           builder: ${{ steps.builder.outputs.name }}
           cache-to: type=gha,mode=max,scope=${{ matrix.arch }}
@@ -127,13 +130,13 @@ jobs:
             github.event.pull_request.number }}-alpha-${{ matrix.arch }}
 
       - name: upload sboms
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6
         with:
           name: sbom-artifact-${{ matrix.arch }}
           path: out-${{ matrix.arch }}/*.json
 
       - name: build image from cache
-        uses: docker/build-push-action@v6
+        uses: docker/build-push-action@263435318d21b8e681c14492fe198d362a7d2c83 # v6
         with:
           cache-from: type=gha,scope=${{ matrix.arch }}
           context: .
@@ -150,7 +153,7 @@ jobs:
           github.event.pull_request.number }}-alpha-${{ matrix.arch }}
 
       - name: upload artifact
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6
         with:
           name: container-artifact-${{ matrix.arch }}
           path: /tmp/images-${{ matrix.arch }}.tar
@@ -159,36 +162,48 @@ jobs:
   scan-image:
     needs: [build-image]
     runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    permissions:
+      contents: read
+      security-events: write
     strategy:
       matrix:
         arch: [amd64, arm64]
     steps:
       - name: download artifact
-        uses: actions/download-artifact@v7
+        uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131 # v7
         with:
           name: container-artifact-${{ matrix.arch }}
           path: .
 
       - name: cve scan
-        uses: aquasecurity/trivy-action@0.33.1
+        uses: aquasecurity/trivy-action@b6643a29fecd7f34b3597bc6acb0a98b03d33ff8 # 0.33.1
         with:
           input: images-${{ matrix.arch }}.tar
-          format: "table"
+          format: "sarif"
+          output: "trivy-results-${{ matrix.arch }}.sarif"
           exit-code: "1"
           ignore-unfixed: true
           vuln-type: "os,library"
           severity: "CRITICAL,HIGH"
 
+      - name: Upload Trivy scan results
+        if: always()
+        uses: github/codeql-action/upload-sarif@2b983b380ce715a6c836c917154509c332c19b3a # v3
+        with:
+          sarif_file: "trivy-results-${{ matrix.arch }}.sarif"
+
   scan-sboms:
     needs: [build-image]
     runs-on: ubuntu-24.04
+    timeout-minutes: 10
     strategy:
       matrix:
         arch: [amd64, arm64]
         sbom: [sbom-stage1.spdx.json, sbom-stage2.spdx.json, sbom.spdx.json]
     steps:
       - name: download sboms
-        uses: actions/download-artifact@v7
+        uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131 # v7
         with:
           name: sbom-artifact-${{ matrix.arch }}
           path: .
@@ -199,17 +214,18 @@ jobs:
         run: jq .predicate ${{ matrix.sbom }} > ${{ matrix.sbom }}.tmp
 
       - name: scan ${{ matrix.sbom }}
-        uses: anchore/scan-action@v7
+        uses: anchore/scan-action@8d2fce09422cd6037e577f4130e9b925e9a37175 # v7
         id: scan-outputs
         with:
           add-cpes-if-none: true
-          fail-build: false
+          fail-build: true
           output-format: table
           sbom: ${{ matrix.sbom }}.tmp
 
   test-container:
     needs: [build-image]
     runs-on: ${{ matrix.runner }}
+    timeout-minutes: 5
     strategy:
       matrix:
         include:
@@ -219,7 +235,7 @@ jobs:
             arch: arm64
     steps:
       - name: download artifact
-        uses: actions/download-artifact@v7
+        uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131 # v7
         with:
           name: container-artifact-${{ matrix.arch }}
           path: .
@@ -239,7 +255,8 @@ jobs:
       contents: write
       pull-requests: write
     runs-on: ubuntu-24.04
-    needs: list-changed-files
+    timeout-minutes: 5
+    needs: [list-changed-files, scan-image, scan-sboms, test-container]
     if: >-
       ${{
         github.actor == 'dependabot[bot]' && (
@@ -253,11 +270,11 @@ jobs:
         ) ||
         contains(
           needs.list-changed-files.outputs.changedFiles,
-          'ci.yaml'
+          '.github/workflows/ci.yaml'
         ) ||
         contains(
           needs.list-changed-files.outputs.changedFiles,
-          'release.yaml'
+          '.github/workflows/release.yaml'
         )
         )
       }}
