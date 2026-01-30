@@ -1,33 +1,60 @@
-# dockerfile-minimal-terraform ![docker publish](https://github.com/ChaosCypher/dockerfile-minimal-terraform/actions/workflows/release.yaml/badge.svg)
+# syntax=docker/dockerfile:1.5
 
-This repository aims to create a secure, customizable, minimal Docker container that exposes the `terraform` binary to a host machine. It begins as an alpine base(`stage 1`), where gpg and sha validations occur. Following `stage 1` the terraform binary is copied from `stage 1` into a scratch base(`stage 2`).
+ARG BUILDKIT_SBOM_SCAN_CONTEXT=true
+ARG BUILDKIT_SBOM_SCAN_STAGE=true
 
-Only **84.6MB**!!
+FROM alpine:3.23.0@sha256:51183f2cfa6320055da30872f211093f9ff1d3cf06f39a0bdb212314c5dc7375 AS stage1
 
-## using the container
+ARG TERRAFORM_VERSION="1.14.2"
+ARG TARGETARCH
+ARG TARGETOS=linux
+ARG PLATFORM="${TARGETOS}_${TARGETARCH}"
 
-```shell
-docker run --rm -it -v $PWD:$PWD -v /tmp:/tmp -w $PWD chaoscypher/minimal-terraform <COMMAND>
-```
+WORKDIR /
 
-## building the image
+COPY hashicorp.asc hashicorp.asc
 
-This snippet builds the container with default ARGS set in the Dockerfile:
+# fail the Dockerfile build if any commands fail
+SHELL ["/bin/ash", "-eo", "pipefail", "-c"]
 
-```shell
-docker build -t terraform:main .
-```
+# DL3018: We intentionally do not pin package versions for ca-certificates and gnupg.
+# These are build-time dependencies only (not in final image) and we want the latest
+# security patches. The apk upgrade ensures all packages are up to date.
+# hadolint ignore=DL3018
+RUN apk upgrade --no-cache \
+    && apk add --no-cache ca-certificates \
+                          gnupg \
+        # expect a warning here because the trustdb is empty in this container - we manually verify the signature later
+    && gpg --import hashicorp.asc \
+    && wget -q https://releases.hashicorp.com/terraform/${TERRAFORM_VERSION}/terraform_${TERRAFORM_VERSION}_${PLATFORM}.zip \
+    && wget -q https://releases.hashicorp.com/terraform/${TERRAFORM_VERSION}/terraform_${TERRAFORM_VERSION}_SHA256SUMS \
+    && wget -q https://releases.hashicorp.com/terraform/${TERRAFORM_VERSION}/terraform_${TERRAFORM_VERSION}_SHA256SUMS.72D7468F.sig \
+    && gpg --verify terraform_${TERRAFORM_VERSION}_SHA256SUMS.72D7468F.sig terraform_${TERRAFORM_VERSION}_SHA256SUMS \
+        # sha256sum packaged with alpine doesn't allow file exclusions so we need to isolate the file we want to verify
+    && grep ${TERRAFORM_VERSION}_${PLATFORM}.zip terraform_${TERRAFORM_VERSION}_SHA256SUMS | sha256sum \
+    && unzip terraform_${TERRAFORM_VERSION}_${PLATFORM}.zip \
+        # create an entry for /etc/passwd file in the next stage
+    && echo "nobody:x:65534:65534:Nobody:/:" > /etc_passwd \
+    && find /tmp -type f -type d -exec rm -rf {} +
 
-The defaults can be overwritten:
+FROM scratch AS stage2
 
-```shell
-docker build --build-arg TERRAFORM_VERSION=1.4.6 -t terraform:main .
-```
+COPY --from=stage1 terraform /terraform
+    # a /tmp directory is required by terraform
+COPY --from=stage1 /tmp /tmp
+    # the terraform binary requires a ca bundle in order to interact with provider endpoints over tls
+COPY --from=stage1 /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
+    # /etc/passwd is required to run as a non-root user in a scratch container
+COPY --from=stage1 /etc_passwd /etc/passwd
 
-## Default Versions
+FROM stage2
 
-| Docker Argument   | Default                              |
-| ----------------- | ------------------------------------ |
-| ALPINE_VERSION    | 3.23.0                               |
-| PLATFORM          | linux\_${TARGETARCH} (auto-detected) |
-| TERRAFORM_VERSION | 1.14.2                               |
+LABEL org.opencontainers.image.authors="jamie@chaoscypher.ca"
+LABEL org.opencontainers.image.description="A minimal Terraform image"
+LABEL org.opencontainers.image.source="https://github.com/ChaosCypher/dockerfile-minimal-terraform/blob/main/Dockerfile"
+
+USER nobody
+
+HEALTHCHECK CMD terraform --version
+
+ENTRYPOINT [ "/terraform" ]
