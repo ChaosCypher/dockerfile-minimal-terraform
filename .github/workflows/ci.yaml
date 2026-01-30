@@ -218,7 +218,6 @@ jobs:
         id: scan-outputs
         with:
           add-cpes-if-none: true
-          fail-build: true
           only-fixed: true
           output-format: table
           sbom: ${{ matrix.sbom }}.tmp
