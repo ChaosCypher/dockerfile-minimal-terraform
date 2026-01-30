@@ -9,8 +9,12 @@ on:
     paths:
       - Dockerfile
       - hashicorp.asc
-      - ci.yaml
-      - release.yaml
+      - .github/workflows/ci.yaml
+      - .github/workflows/release.yaml
+
+concurrency:
+  group: release
+  cancel-in-progress: false
 
 permissions:
   contents: read
@@ -22,6 +26,7 @@ jobs:
       pull-requests: read
     if: github.event.pull_request.merged
     runs-on: ubuntu-24.04
+    timeout-minutes: 10
     outputs:
       version: ${{ steps.increment-version.outputs.result }}
       major-version: ${{ steps.increment-version.outputs.major-version }}
@@ -30,7 +35,7 @@ jobs:
     steps:
       - name: increment version
         id: increment-version
-        uses: actions/github-script@v8
+        uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           result-encoding: string
@@ -89,7 +94,7 @@ jobs:
             return version.join('.');
 
       - name: create release
-        uses: actions/github-script@v8
+        uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
         env:
           GITHUB_REF: ${{env.GITHUB_REF}}
         with:
@@ -111,25 +116,28 @@ jobs:
   publish-image:
     if: github.event.pull_request.merged
     runs-on: ubuntu-24.04
+    timeout-minutes: 30
     needs: [auto-semver-release]
+    permissions:
+      contents: read
     steps:
       - name: checkout code
-        uses: actions/checkout@v6
+        uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6
 
       - name: set up QEMU
-        uses: docker/setup-qemu-action@v3
+        uses: docker/setup-qemu-action@c7c53464625b32c7a7e944ae62b3e17d2b600130 # v3
 
       - name: set up docker buildx
-        uses: docker/setup-buildx-action@v3
+        uses: docker/setup-buildx-action@8d2750c68a42422c14e847fe6c8ac0403b4cbd6f # v3
 
       - name: log in to dockerhub
-        uses: docker/login-action@v3
+        uses: docker/login-action@c94ce9fb468520275223c153574b00df6fe4bcc9 # v3
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
       - name: build and push multi-arch image
-        uses: docker/build-push-action@v6
+        uses: docker/build-push-action@263435318d21b8e681c14492fe198d362a7d2c83 # v6
         env:
           VER: ${{ needs.auto-semver-release.outputs.version }}
           MAJ: ${{ needs.auto-semver-release.outputs.major-version }}
@@ -137,7 +145,9 @@ jobs:
           context: .
           platforms: linux/amd64,linux/arm64
           push: true
-          cache-from: type=gha
+          cache-from: |
+            type=gha,scope=amd64
+            type=gha,scope=arm64
           tags: |
             chaoscypher/minimal-terraform:latest
             chaoscypher/minimal-terraform:${{ env.VER }}
@@ -145,15 +155,16 @@ jobs:
 
   publish-sbom:
     runs-on: ubuntu-24.04
+    timeout-minutes: 10
     needs: [publish-image, auto-semver-release]
     permissions:
       contents: write
     steps:
       - name: checkout code
-        uses: actions/checkout@v6
+        uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6
 
       - name: publish sbom
-        uses: anchore/sbom-action@v0
+        uses: anchore/sbom-action@deef08a0db64bfad603422135db61477b16cef56 # v0
         with:
           artifact-name: sbom.spdx
           image: >-
