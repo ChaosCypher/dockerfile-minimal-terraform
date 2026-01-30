@@ -23,6 +23,7 @@ The defaults can be overwritten:
 ```shell
 docker build --build-arg TERRAFORM_VERSION=1.4.6 -t terraform:main .
 ```
+
 ## Default Versions
 
 | Docker Argument   | Default                              |
