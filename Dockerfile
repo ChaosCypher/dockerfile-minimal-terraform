@@ -17,6 +17,8 @@ COPY hashicorp.asc hashicorp.asc
 # fail the Dockerfile build if any commands fail
 SHELL ["/bin/ash", "-eo", "pipefail", "-c"]
 
+# These are build-time dependencies only (not in final image) and we want the latest security patches
+# hadolint ignore=DL3018
 RUN apk upgrade --no-cache \
     && apk add --no-cache ca-certificates \
                           gnupg \
