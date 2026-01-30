@@ -209,7 +209,7 @@ jobs:
           path: .
 
       # in-toto predicate is a newer spec not widely support by sbom scanners
-      # it's removed here to achieve compatability as of 05/10/23
+      # it's removed here to achieve compatibility as of 05/10/23
       - name: trim ${{ matrix.sbom }} predicate data
         run: jq .predicate ${{ matrix.sbom }} > ${{ matrix.sbom }}.tmp
 
