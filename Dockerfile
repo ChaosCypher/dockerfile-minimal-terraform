@@ -27,7 +27,7 @@ RUN apk add --no-cache ca-certificates==${CA_CERT_VERSION} \
     && wget -q https://releases.hashicorp.com/terraform/${TERRAFORM_VERSION}/terraform_${TERRAFORM_VERSION}_SHA256SUMS \
     && wget -q https://releases.hashicorp.com/terraform/${TERRAFORM_VERSION}/terraform_${TERRAFORM_VERSION}_SHA256SUMS.72D7468F.sig \
     && gpg --verify terraform_${TERRAFORM_VERSION}_SHA256SUMS.72D7468F.sig terraform_${TERRAFORM_VERSION}_SHA256SUMS \
-        # sha256sum packaged with alpine doesnt allow file exclusions so we need to isolate the file we want to verify
+        # sha256sum packaged with alpine doesn't allow file exclusions so we need to isolate the file we want to verify
     && grep ${TERRAFORM_VERSION}_${PLATFORM}.zip terraform_${TERRAFORM_VERSION}_SHA256SUMS | sha256sum \
     && unzip terraform_${TERRAFORM_VERSION}_${PLATFORM}.zip \
         # create an entry for /etc/passwd file in the next stage
