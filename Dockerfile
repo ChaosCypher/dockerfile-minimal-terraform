@@ -5,8 +5,6 @@ ARG BUILDKIT_SBOM_SCAN_STAGE=true
 
 FROM alpine:3.23.0@sha256:51183f2cfa6320055da30872f211093f9ff1d3cf06f39a0bdb212314c5dc7375 AS stage1
 
-ARG CA_CERT_VERSION="20251003-r0"
-ARG GNUPG_VERSION="2.4.9-r0"
 ARG TERRAFORM_VERSION="1.14.2"
 ARG TARGETARCH
 ARG TARGETOS=linux
@@ -19,8 +17,9 @@ COPY hashicorp.asc hashicorp.asc
 # fail the Dockerfile build if any commands fail
 SHELL ["/bin/ash", "-eo", "pipefail", "-c"]
 
-RUN apk add --no-cache ca-certificates==${CA_CERT_VERSION} \
-                       gnupg==${GNUPG_VERSION} \
+RUN apk upgrade --no-cache \
+    && apk add --no-cache ca-certificates \
+                          gnupg \
         # expect a warning here because the trustdb is empty in this container - we manually verify the signature later
     && gpg --import hashicorp.asc \
     && wget -q https://releases.hashicorp.com/terraform/${TERRAFORM_VERSION}/terraform_${TERRAFORM_VERSION}_${PLATFORM}.zip \
