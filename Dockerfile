@@ -17,9 +17,7 @@ COPY hashicorp.asc hashicorp.asc
 # fail the Dockerfile build if any commands fail
 SHELL ["/bin/ash", "-eo", "pipefail", "-c"]
 
-# DL3018: We intentionally do not pin package versions for ca-certificates and gnupg.
-# These are build-time dependencies only (not in final image) and we want the latest
-# security patches. The apk upgrade ensures all packages are up to date.
+# These are build-time dependencies only (not in final image) and we want the latest ecurity patches.
 # hadolint ignore=DL3018
 RUN apk upgrade --no-cache \
     && apk add --no-cache ca-certificates \
