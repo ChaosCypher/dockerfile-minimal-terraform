@@ -115,7 +115,7 @@ jobs:
 
         # export build locally until docker exporter supports manifests
       - name: build and cache
-        uses: docker/build-push-action@263435318d21b8e681c14492fe198d362a7d2c83 # v6
+        uses: docker/build-push-action@10e90e3645eae34f1e60eeb005ba3a3d33f178e8 # v6
         with:
           builder: ${{ steps.builder.outputs.name }}
           cache-to: type=gha,mode=max,scope=${{ matrix.arch }}
@@ -136,7 +136,7 @@ jobs:
           path: out-${{ matrix.arch }}/*.json
 
       - name: build image from cache
-        uses: docker/build-push-action@263435318d21b8e681c14492fe198d362a7d2c83 # v6
+        uses: docker/build-push-action@10e90e3645eae34f1e60eeb005ba3a3d33f178e8 # v6
         with:
           cache-from: type=gha,scope=${{ matrix.arch }}
           context: .
